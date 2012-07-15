@@ -1,7 +1,7 @@
 /**
  * 
  */
-package at.theduke.ispy.client;
+package at.theduke.spector.client;
 
 /**
  * @author theduke

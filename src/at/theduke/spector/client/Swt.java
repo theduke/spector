@@ -1,7 +1,7 @@
 /**
  * 
  */
-package at.theduke.ispy.client;
+package at.theduke.spector.client;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -16,6 +16,8 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.swt.widgets.TrayItem;
+
+import at.theduke.spector.Session;
 
 /**
  * @author theduke
@@ -36,15 +38,7 @@ public class Swt {
 		
 		initTray();
 		
-		// initialize database connection immediately after loop starts
-		display.timerExec(500, new Runnable() {
-			@Override
-			public void run() {
-				application.initializeMongo(application.getConfig());
-			}
-		});
-		
-		// set up the timer
+		// set up the notification timer
 		Runnable timer = new Runnable() {
 			
 			@Override
@@ -55,7 +49,21 @@ public class Swt {
 			}
 		};
 		
+		// set up the session persist timer - every 5 minutes
+		final int timer2Time = 1000 * 60 * 2;
+		Runnable timer2 = new Runnable() {
+			
+			@Override
+			public void run() {
+				application.doNotify();
+				application.persistSession();
+				
+				display.timerExec(timer2Time, this);
+			}
+		};
+		
 		display.timerExec(10000, timer);
+		display.timerExec(timer2Time, timer2);
 		
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {

@@ -1,7 +1,9 @@
 /**
  * 
  */
-package at.theduke.ispy.client;
+package at.theduke.spector.client;
+
+import java.net.UnknownHostException;
 
 /**
  * @author theduke
@@ -19,8 +21,15 @@ public class ConfigData
 	
 	public String lastNotificationId;
 	
+	public boolean persistLocally = true;
+	
 	public ConfigData() {
-		hostname = java.net.InetAddress.getLocalHost().getHostName();
+		try {
+			hostname = java.net.InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		
 		username = System.getProperty("user.name");
 	}
 	

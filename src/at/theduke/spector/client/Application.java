@@ -1,18 +1,18 @@
 /**
  * 
  */
-package at.theduke.ispy.client;
+package at.theduke.spector.client;
 
 import java.net.UnknownHostException;
 
-import at.theduke.ispy.Session;
+import at.theduke.spector.Session;
 
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoException;
 
 /**
- * @author theduke
+ * @author thedukelong time = e.getWhen();
  *
  */
 public class Application {
@@ -24,7 +24,6 @@ public class Application {
 	
 	private Fetcher fetcher;
 	private Pusher pusher;
-	
 	private EventRecorder eventRecorder;
 	
 	
@@ -44,7 +43,16 @@ public class Application {
 		config = Configuration.readConfiguration();
 		
 		eventRecorder = new EventRecorder();
-		session = eventRecorder.startSession();
+		session = eventRecorder.startSession(config);
+		
+		pusher = new Pusher(config);
+		
+		// engage shutdown hook
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                persistSession();
+            }
+        });
 	}
 	
 	private void run() {
@@ -52,46 +60,24 @@ public class Application {
 		swtApp.run(this);
 	}
 	
-	public void initializeMongo(ConfigData config) {
-		System.out.println("Initializing Mongo connection");
-		
-		if (config != null && config.isValid()) {
-			System.out.println("Config validated successfully");
-			
-			try {
-				fetcher = new Fetcher(config);
-				notificationsEnabled = true;
-				
-				swtApp.showToolTip("Connected to database.");
-			} catch (UnknownHostException e) {
-				swtApp.showAlert("iSpy", "The specified Mongo Host could not be found. Check settings.");
-			} catch (MongoException e) {
-				swtApp.showAlert("iSpy", "Could not connect to the MongoDB server. Check settings and connection.");
-			} catch (Exception e) {
-				swtApp.showAlert("iSpy", e.getMessage());
-			}
-		} else {
-			notificationsEnabled = false;
-			
-			System.out.println("Config is invalid.");
-		}
-	}
-	
 	public void doNotify() {
 		if (!(notificationsEnabled && (config != null) && config.isValid())) return;
 		
-		DBCursor entries = fetcher.doFetch();
-		
-		boolean idSet = false;
-		
-		for (DBObject entry : entries) {
-			if (!idSet) {
-				config.lastNotificationId = entry.get("_id").toString();
-				idSet = true;
-			}
-		}
+		// add code for fetching and displaying notifications
 		
 		Configuration.writeConfiguration(config);
+	}
+	
+	public void persistSession() {
+		System.out.println("Persisting session");
+		
+		if (config.persistLocally) {
+			session.saveToFile(Configuration.getSessionDataPath(session.id));
+		}
+		
+		pusher.persistSession(session);
+		
+		session.clearAggregateData();
 	}
 
 	/**
