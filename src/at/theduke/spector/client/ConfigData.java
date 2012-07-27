@@ -11,6 +11,8 @@ import java.net.UnknownHostException;
  */
 public class ConfigData
 {
+	public boolean pushToServer = true;
+	
 	public String serverHost = "localhost";
 	public int serverPort = 27017;
 	
@@ -22,6 +24,8 @@ public class ConfigData
 	public String lastNotificationId;
 	
 	public boolean persistLocally = true;
+	
+	public boolean guiEnabled = true;
 	
 	public ConfigData() {
 		try {

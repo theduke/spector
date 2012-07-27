@@ -17,8 +17,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.swt.widgets.TrayItem;
 
-import at.theduke.spector.Session;
-
 /**
  * @author theduke
  *
@@ -36,7 +34,9 @@ public class Swt {
 		display = new Display();
 		shell = new Shell();
 		
-		initTray();
+		if (application.getConfig().guiEnabled) {
+			initTray();
+		}
 		
 		// set up the notification timer
 		Runnable timer = new Runnable() {

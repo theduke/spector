@@ -23,7 +23,7 @@ public class Application {
 	private Session session;
 	
 	private Fetcher fetcher;
-	private Pusher pusher;
+	private SocketPusher pusher;
 	private EventRecorder eventRecorder;
 	
 	
@@ -42,14 +42,22 @@ public class Application {
 	{
 		config = Configuration.readConfiguration();
 		
-		eventRecorder = new EventRecorder();
-		session = eventRecorder.startSession(config);
+		session = new Session();
 		
-		pusher = new Pusher(config);
+		
+		session.start(config);
+		
+		eventRecorder = new EventRecorder();
+		eventRecorder.session = session;
+		
+		if (config.pushToServer) {
+			pusher = new SocketPusher(config);
+		}
 		
 		// engage shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
+            	session.stop();
                 persistSession();
             }
         });
@@ -74,8 +82,6 @@ public class Application {
 		if (config.persistLocally) {
 			session.saveToFile(Configuration.getSessionDataPath(session.id));
 		}
-		
-		pusher.persistSession(session);
 		
 		session.clearAggregateData();
 	}

@@ -1,35 +1,12 @@
 package at.theduke.spector.client;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.FormAttachment;
-import org.eclipse.swt.layout.FormData;
-import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.List;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.SWT;
-
-import at.theduke.spector.Session;
 
 import com.google.gson.Gson;
 
@@ -60,7 +37,13 @@ public class Configuration {
 		try {
 			String line = null;
 			
-			BufferedReader reader = new BufferedReader(new  FileReader(getConfigFilePath()));
+			File configFile = getConfigFilePath();
+			
+			if (!configFile.exists()) {
+				throw new FileNotFoundException();
+			}
+			
+			BufferedReader reader = new BufferedReader(new  FileReader(configFile));
 			while ((line = reader.readLine()) != null) {
 				content += line;
 			}
@@ -77,9 +60,10 @@ public class Configuration {
 	}
 	
 	public static boolean writeConfiguration(ConfigData data) {
-		String path = getConfigFilePath();
+		File file = getConfigFilePath();
+		
 		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
 			
 			Gson gson = new Gson();
 			writer.write(gson.toJson(data));
@@ -107,13 +91,24 @@ public class Configuration {
 		return path;
 	}
 	
-	private static String getConfigFilePath() {
-		String path = System.getProperty("user.home") + System.getProperty("file.separator") + ".ispy";
-		return path;
+	private static File getConfigFilePath() {
+		String confPath = ".spector_client_config";
+		
+		// first, try a user specific config in home dir
+		String path = System.getProperty("user.home") + System.getProperty("file.separator") + confPath;
+		File file = new File(path);
+		if (file.exists()) return file;
+		
+		// then check to see if a config file was bundled with the executable
+		path = Application.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+		path += confPath;
+		file = new File(path);
+		return file;
 	}
 
 	private boolean readAndSaveSettings() {
 		ConfigData data = buildConfigData();
+		
 		if (data.isValid()) {
 			writeConfiguration(data);
 			return true;
