@@ -16,10 +16,12 @@ public class SocketPusher implements Pusher
 	Socket socket;
 	BufferedWriter socketWriter;
 	
+	boolean connected = false;
+	
 	/**
 	 * The buffer will be flushed every interval events.
 	 */
-	static final int FLUSH_INTERVAL = 2;
+	static final int FLUSH_INTERVAL = 100;
 	
 	/**
 	 * Counter to enforce flushing in regular intervals.  
@@ -31,6 +33,33 @@ public class SocketPusher implements Pusher
 		config = c;
 		
 		connect();
+	}
+	
+	public void onSessionStart(String id) {
+		
+	}
+	
+	public void pushEvent(String entry) {
+		if (!connected) {
+			// try to re-connect if no active socket con
+			connect();
+		}
+		
+		try {
+			socketWriter.write(entry);
+			
+			++eventCounter;
+			
+			if (eventCounter >= FLUSH_INTERVAL) {
+				socketWriter.flush();
+			}
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+			
+			// close the socket, try to re-open it later
+			close();
+		}
 	}
 	
 	protected boolean connect() {
@@ -59,37 +88,24 @@ public class SocketPusher implements Pusher
 		System.out.println("Opened connection to server " 
 		  + config.serverHost + " on port " + config.serverPort);
 		
+		connected = true;
 		return true;
 	}
 	
-	public void onSessionStart(String id) {
-		
-	}
-	
-	public void pushEvent(String entry) {
-		if (socketWriter == null) return;
-		
+	void close() {
 		try {
-			socketWriter.write(entry);
+			socketWriter.close();
+			socket.close();
 			
-			++eventCounter;
-			
-			if (eventCounter >= FLUSH_INTERVAL) {
-				socketWriter.flush();
-			}
+			connected = false;
 		} catch (IOException e) {
-			System.out.println(e.getMessage());
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	@Override
 	public void onSessionStop() {
-		try {
-			socket.close();
-		} catch (IOException e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-		}
+		close();
 	}
 }

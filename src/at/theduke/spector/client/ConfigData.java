@@ -24,7 +24,7 @@ public class ConfigData
 	
 	public String lastNotificationId;
 	
-	public boolean guiEnabled = false;
+	public boolean guiEnabled = true;
 	
 	public ConfigData() {
 		try {
