@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import at.theduke.spector.Event;
 import at.theduke.spector.client.ConfigData;
 
 public class SocketPusher implements Pusher
@@ -27,7 +28,14 @@ public class SocketPusher implements Pusher
 	 * Counter to enforce flushing in regular intervals.  
 	 */
 	int eventCounter = 0;
-
+	
+	/*
+	 * We need to persist the session start event 
+	 * in case we need to reopen the connection and resend the
+	 * session-start.
+	 */
+	Event sessionStart;
+	
 	public SocketPusher(ConfigData c) 
 	{
 		config = c;
@@ -39,14 +47,24 @@ public class SocketPusher implements Pusher
 		
 	}
 	
-	public void pushEvent(String entry) {
+	public void pushEvent(Event entry) {
+		if (entry.getType() == Event.EVENT_SESSION_END) {
+			sessionStart = entry;
+		}
+		
 		if (!connected) {
 			// try to re-connect if no active socket con
-			connect();
+			boolean success = connect();
+			
+			// if the connection was re-opened, we need to 
+			// re-send the session-start event.
+			if (success && sessionStart != null && entry.getType() != Event.EVENT_SESSION_END) {
+				pushEvent(sessionStart);
+			}
 		}
 		
 		try {
-			socketWriter.write(entry);
+			socketWriter.write(entry.serialize());
 			
 			++eventCounter;
 			

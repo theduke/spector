@@ -1,5 +1,7 @@
 package at.theduke.spector.client.Pusher;
 
+import at.theduke.spector.Event;
+
 public interface Pusher {
 	
 	/**
@@ -18,6 +20,6 @@ public interface Pusher {
 	/**
 	 * @param event
 	 */
-	public void pushEvent(String event);
+	public void pushEvent(Event event);
 	
 }

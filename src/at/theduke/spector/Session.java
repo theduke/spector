@@ -13,14 +13,6 @@ import com.mongodb.BasicDBObject;
 
 public class Session 
 {
-  public static final String EVENT_SESSION_START = "session_start";
-  public static final String EVENT_SESSION_END = "session_end";
-  public static final String EVENT_SCREEN_RESOLUTION_SET = "screen_resolution";
-  
-  public static final String EVENT_KEYPRESS = "kp";
-  public static final String EVENT_MOUSECLICK = "mc";
-  public static final String EVENT_MOUSEMOVE = "mm";
-  
   public static final int IDLE_TIME_LIMIT = 120 * 1000;
   public static final double MOUSE_MOVE_RECOGNITION_THRESHHOLD_PERCENT = 0.05;
   
@@ -72,14 +64,14 @@ public class Session
 		  pusher.onSessionStart(id);
 	  }
 	  
-	  logEvent(EVENT_SESSION_START, id);
+	  logEvent(Event.EVENT_SESSION_START, id);
 	  
 	  String resolution = screenResolution.width + "," + screenResolution.height;
-	  logEvent(EVENT_SCREEN_RESOLUTION_SET, resolution);
+	  logEvent(Event.EVENT_SCREEN_RESOLUTION_SET, resolution);
   }
   
   public void stop() {
-	  logEvent(EVENT_SESSION_END, "");
+	  logEvent(Event.EVENT_SESSION_END, "");
   }
   
   protected void recordEvent(long time) {
@@ -91,38 +83,38 @@ public class Session
 	  endTime = time;
   }
   
-  public void logEvent(String event, String data) {
-	  logEvent(event, data, System.currentTimeMillis());
+  public void logEvent(String type, String data) {
+	  logEvent(type, data, System.currentTimeMillis());
   }
   
-  public void logEvent(String event, String data, long time) {
-	  recordEvent(time);
-	  
-	  // prevent special characters in data
-	  data.replace("|", ",");
-	  data.replace("\n", "");
-	  
+  public void logEvent(String type, String data, long time) {
 	  // normalize time
 	  time = time - startTime;
 	  
-	  String entry = event + ":" + data + "|" + time + "\n";
+	  Event event = new Event(type, data, time);
+	  logEvent(event);
+  }
+  
+  public void logEvent(Event event) {
+	  recordEvent(event.time);
 	  
+	  String entry = event.serialize();
 	  log += entry;
 	  
 	  if (printToConsole) System.out.print(entry);
 	  
 	  for (Pusher pusher : pushers) {
-		  pusher.pushEvent(entry);
+		  pusher.pushEvent(event);
 	  }
   }
   
   public void recordKeyPress(int keyCode, long time) {
-	  logEvent(EVENT_KEYPRESS, Integer.toString(keyCode), time);
+	  logEvent(Event.EVENT_KEYPRESS, Integer.toString(keyCode), time);
   }
   
   public void recordMouseMove(int posX, int posY, long time) {
 	  String data = posX + "," + posY;
-	  logEvent(EVENT_MOUSEMOVE, data, time);
+	  logEvent(Event.EVENT_MOUSEMOVE, data, time);
   }
   
   public void recordMouseMove(NativeMouseEvent e) {
@@ -166,7 +158,7 @@ public class Session
   
   public void recordMouseClick(int button, int posX, int posY, long time) {
 	  String data = button + "," + posX + "," + posY;
-	  logEvent(EVENT_MOUSECLICK, data, time);
+	  logEvent(Event.EVENT_MOUSECLICK, data, time);
   }
   
   public void clearAggregateData()

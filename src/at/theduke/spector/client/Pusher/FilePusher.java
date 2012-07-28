@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import at.theduke.spector.Event;
+
 /**
  * @author theduke
  *
@@ -51,10 +53,10 @@ public class FilePusher implements Pusher {
 	}
 	
 	@Override
-	public void pushEvent(String event) {
+	public void pushEvent(Event event) {
 		if (writer != null) {
 			try {
-				writer.write(event);
+				writer.write(event.serialize());
 				
 				++eventCounter;
 				
