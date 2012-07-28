@@ -1,4 +1,4 @@
-package at.theduke.spector.client;
+package at.theduke.spector.client.Pusher;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -7,15 +7,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import org.bson.types.ObjectId;
-
-import at.theduke.spector.Session;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.Mongo;
+import at.theduke.spector.client.ConfigData;
 
 public class SocketPusher implements Pusher
 {
@@ -23,6 +15,16 @@ public class SocketPusher implements Pusher
 	
 	Socket socket;
 	BufferedWriter socketWriter;
+	
+	/**
+	 * The buffer will be flushed every interval events.
+	 */
+	static final int FLUSH_INTERVAL = 2;
+	
+	/**
+	 * Counter to enforce flushing in regular intervals.  
+	 */
+	int eventCounter = 0;
 
 	public SocketPusher(ConfigData c) 
 	{
@@ -54,12 +56,37 @@ public class SocketPusher implements Pusher
 			return false;
 		}
 		
+		System.out.println("Opened connection to server " 
+		  + config.serverHost + " on port " + config.serverPort);
+		
 		return true;
 	}
 	
+	public void onSessionStart(String id) {
+		
+	}
+	
 	public void pushEvent(String entry) {
+		if (socketWriter == null) return;
+		
 		try {
 			socketWriter.write(entry);
+			
+			++eventCounter;
+			
+			if (eventCounter >= FLUSH_INTERVAL) {
+				socketWriter.flush();
+			}
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void onSessionStop() {
+		try {
+			socket.close();
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();

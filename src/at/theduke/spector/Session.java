@@ -2,21 +2,14 @@ package at.theduke.spector;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import org.jnativehook.mouse.NativeMouseEvent;
 
 import at.theduke.spector.client.ConfigData;
-import at.theduke.spector.client.Pusher;
-import at.theduke.spector.client.SocketPusher;
+import at.theduke.spector.client.Pusher.Pusher;
 
-import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 public class Session 
 {
@@ -63,7 +56,7 @@ public class Session
   
   private BasicDBObject dbObject;
   
-  private boolean printToConsole = true;
+  private boolean printToConsole = false;
   
   public void start(ConfigData config) {
 	  hostname = config.hostname;
@@ -74,6 +67,10 @@ public class Session
 	  
 	  // calculate unique session id
 	  id = hostname + "-" + username + "-" + startTime;
+	  
+	  for (Pusher pusher : pushers) {
+		  pusher.onSessionStart(id);
+	  }
 	  
 	  logEvent(EVENT_SESSION_START, id);
 	  
@@ -193,30 +190,6 @@ public class Session
 	  dbObject.put("endTime", endTime);
 	  
 	  return dbObject;
-  }
-  
-  public boolean saveToFile(String path) {
-	  File file = new File(path);
-	  
-	  // if file does not exist, add screen resolution info
-	  if (!file.exists()) {
-		  String ri = "screen_resolution:" + screenResolution.width + "|" + screenResolution.height + "\n";
-		  path = ri + path;
-	  }
-	  
-	  try {
-		  BufferedWriter writer = new BufferedWriter(new FileWriter(file, file.exists()));
-		  
-		  writer.write(log);
-
-		  writer.close();
-	  } catch (IOException e) {
-		  return false;
-	  }
-	 
-	  System.out.println("Saved session data to file");
-	  
-	  return true;
   }
   
   public void addPusher(Pusher p) {

@@ -3,13 +3,9 @@
  */
 package at.theduke.spector.client;
 
-import java.net.UnknownHostException;
-
 import at.theduke.spector.Session;
-
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MongoException;
+import at.theduke.spector.client.Pusher.FilePusher;
+import at.theduke.spector.client.Pusher.SocketPusher;
 
 /**
  * @author thedukelong time = e.getWhen();
@@ -23,7 +19,6 @@ public class Application {
 	private Session session;
 	
 	private Fetcher fetcher;
-	private SocketPusher pusher;
 	private EventRecorder eventRecorder;
 	
 	
@@ -44,15 +39,21 @@ public class Application {
 		
 		session = new Session();
 		
+		// connect pushers
+		if (config.pushToFile) {
+			FilePusher pusher = new FilePusher(Configuration.getDataPath());
+			session.addPusher(pusher);
+		}
+		
+		if (config.pushToServer) {
+			SocketPusher pusher = new SocketPusher(config);
+			session.addPusher(pusher);
+		}
 		
 		session.start(config);
 		
 		eventRecorder = new EventRecorder();
 		eventRecorder.session = session;
-		
-		if (config.pushToServer) {
-			pusher = new SocketPusher(config);
-		}
 		
 		// engage shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -77,12 +78,6 @@ public class Application {
 	}
 	
 	public void persistSession() {
-		System.out.println("Persisting session");
-		
-		if (config.persistLocally) {
-			session.saveToFile(Configuration.getSessionDataPath(session.id));
-		}
-		
 		session.clearAggregateData();
 	}
 

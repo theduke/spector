@@ -12,9 +12,10 @@ import java.net.UnknownHostException;
 public class ConfigData
 {
 	public boolean pushToServer = true;
+	public boolean pushToFile = true;
 	
 	public String serverHost = "localhost";
-	public int serverPort = 27017;
+	public int serverPort = 3333;
 	
 	public String hostname = "";
 	public String username = "";
@@ -23,9 +24,7 @@ public class ConfigData
 	
 	public String lastNotificationId;
 	
-	public boolean persistLocally = true;
-	
-	public boolean guiEnabled = true;
+	public boolean guiEnabled = false;
 	
 	public ConfigData() {
 		try {

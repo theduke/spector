@@ -25,8 +25,6 @@ import com.google.gson.Gson;
 */
 public class Configuration {
 	
-	private Application application;
-	
 	public static void showGUI(Application app) {
 		
 	}
