@@ -7,6 +7,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+
+import at.theduke.spector.client.config.PathSpec;
 
 import com.google.gson.Gson;
 
@@ -25,17 +29,16 @@ import com.google.gson.Gson;
 */
 public class Configuration {
 	
-	public static void showGUI(Application app) {
-		
-	}
+	protected ConfigData data = null;
+	protected String configPath = null;
 	
-	public static ConfigData readConfiguration() {
+	private static ConfigData readConfiguration(String configPath) {
 		String content = "";
 		
 		try {
 			String line = null;
 			
-			File configFile = getConfigFilePath();
+			File configFile = new File(configPath);
 			
 			if (!configFile.exists()) {
 				throw new FileNotFoundException();
@@ -45,20 +48,29 @@ public class Configuration {
 			while ((line = reader.readLine()) != null) {
 				content += line;
 			}
+			
+			reader.close();
 		} catch (FileNotFoundException e) {
 			return new ConfigData();
 		} catch (IOException e) {
 			return new ConfigData();
 		}
+		finally {
+			
+		}
+		
 		
 		Gson gson = new Gson();
 		ConfigData data = gson.fromJson(content, ConfigData.class);
 		
+		// Fill in default values.
+		
+		
 		return data;
 	}
 	
-	public static boolean writeConfiguration(ConfigData data) {
-		File file = getConfigFilePath();
+	private static boolean writeConfiguration(String configPath, ConfigData data) {
+		File file = new File(configPath);
 		
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
@@ -74,61 +86,78 @@ public class Configuration {
 		return true;
 	}
 	
-	public static String getDataPath() {
-		String path = System.getProperty("user.home") + System.getProperty("file.separator") + ".spector-client";
-		
-		File file = new File(path);
-		if (!file.exists()) file.mkdir();
-		
-		return path;
+	public Configuration() {
+		configPath = getDefaultConfigPath();
 	}
 	
-	public static String getSessionDataPath(String id) {
-		String path = getDataPath() + System.getProperty("file.separator") + id + ".session";
-		
-		return path;
-	}
-	
-	private static File getConfigFilePath() {
-		String confPath = ".spector_client_config";
-		
-		// first, try a user specific config in home dir
-		String path = System.getProperty("user.home") + System.getProperty("file.separator") + confPath;
-		File file = new File(path);
-		if (file.exists()) return file;
-		
-		// then check to see if a config file was bundled with the executable
-		path = Application.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-		path += confPath;
-		file = new File(path);
-		return file;
-	}
-
-	private boolean readAndSaveSettings() {
-		ConfigData data = buildConfigData();
-		
-		if (data.isValid()) {
-			writeConfiguration(data);
+	public boolean isValid() {
+		if ((data.hostname.length() > 0)
+			&&(data.username.length() > 0) 
+			&& (data.serverHost.length() > 0) 
+			&& (data.serverPort > 0)) { 
 			return true;
 		} else {
 			return false;
 		}
 	}
 	
-	private ConfigData buildConfigData() {
-		ConfigData data = new ConfigData();
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean load() {
+		return load(configPath);
+	}
+
+	/**
+	 * 
+	 * @param configPath
+	 * @return
+	 */
+	public boolean load(String path) {
+		data = readConfiguration(path);
 		
-		/*
-		data.mongoHost = host.getText();
-		data.mongoPort = Integer.parseInt(port.getText());
-		data.mongoDatabase = database.getText();
-		data.mongoUser = user.getText();
-		data.mongoPassword = password.getText();
+		// Set default values.
+		if (data.pushToFile) {
+			if (data.dataPath.length() < 1) {
+				data.dataPath = getDefaultDataPath();
+			}
+		}
 		
-		data.username = username.getText();
-		*/
+		if (data.pushToServer) {
+			try {
+				data.hostname = java.net.InetAddress.getLocalHost().getHostName();
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+		}
 		
-		return data;
+		if (data.username.length() < 1) {
+			data.username = System.getProperty("user.name");
+		}
+		
+		return true;
+	}
+	
+	public boolean save() {
+		return writeConfiguration(configPath, data);
+	}
+	
+	protected String getDefaultConfigPath() {
+		String confPath = ".spector_client_config";
+		String path = System.getProperty("user.home") + System.getProperty("file.separator") + confPath;
+		
+		return path;
+	}
+	
+	public String getDefaultDataPath() {
+		String path = System.getProperty("user.home") + System.getProperty("file.separator") + ".spector-client";
+		return path;
+	}
+	
+	public String getSessionDataPath(String id) {
+		String path = data.dataPath + System.getProperty("file.separator") + id + ".session";	
+		return path;
 	}
 	
 	/**
@@ -136,5 +165,73 @@ public class Configuration {
 	*/	
 	protected void checkSubclass() {
 		
+	}
+	
+	/**
+	 * Getters and setters.
+	 */
+	
+	public ConfigData getData() {
+		return data;
+	}
+	
+	public void setData(ConfigData data) {
+		this.data = data;
+	}
+	
+	public String getDataPath() {
+		return data.dataPath;
+	}
+
+	public void setDataPath(String dataPath) {
+		this.data.dataPath = dataPath;
+	}
+
+	public boolean isPushToFile() {
+		return data.pushToFile;
+	}
+
+	public void setPushToFile(boolean pushToFile) {
+		this.data.pushToFile = pushToFile;
+	}
+
+	public String getUsername() {
+		return data.username;
+	}
+
+	public void setUsername(String username) {
+		this.data.username = username;
+	}
+	
+	public String getHostname() {
+		return data.hostname;
+	}
+
+	public void setHostname(String hostname) {
+		this.data.hostname = hostname;
+	}	
+
+	public String getLastNotificationId() {
+		return data.lastNotificationId;
+	}
+
+	public void setLastNotificationId(String lastNotificationId) {
+		this.data.lastNotificationId = lastNotificationId;
+	}
+
+	public boolean isGuiEnabled() {
+		return data.guiEnabled;
+	}
+
+	public void setGuiEnabled(boolean guiEnabled) {
+		this.data.guiEnabled = guiEnabled;
+	}
+
+	public ArrayList<PathSpec> getMonitoredPaths() {
+		return data.monitoredPaths;
+	}
+
+	public void setMonitoredPaths(ArrayList<PathSpec> monitoredPaths) {
+		this.data.monitoredPaths = monitoredPaths;
 	}
 }

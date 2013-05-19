@@ -3,10 +3,12 @@ package at.theduke.spector;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.ArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jnativehook.mouse.NativeMouseEvent;
 
-import at.theduke.spector.client.ConfigData;
+import at.theduke.spector.client.Configuration;
 import at.theduke.spector.client.Pusher.Pusher;
 
 import com.mongodb.BasicDBObject;
@@ -26,6 +28,9 @@ public class Session
   public long endTime;
   
   ArrayList<Pusher> pushers = new ArrayList<Pusher>();
+  
+  private final ReentrantReadWriteLock eventReadWriteLock = new ReentrantReadWriteLock();
+  private final Lock eventWriteLock = eventReadWriteLock.writeLock();
   
   /*
    * Text log of all events that occur during a session.
@@ -48,11 +53,11 @@ public class Session
   
   private BasicDBObject dbObject;
   
-  private boolean printToConsole = false;
+  private boolean printToConsole = true;
   
-  public void start(ConfigData config) {
-	  hostname = config.hostname;
-	  username = config.username;
+  public void start(Configuration config) {
+	  hostname = config.getHostname();
+	  username = config.getUsername();
 	  
 	  startTime = endTime = System.currentTimeMillis();
 	  screenResolution = Toolkit.getDefaultToolkit().getScreenSize();
@@ -72,6 +77,10 @@ public class Session
   
   public void stop() {
 	  logEvent(Event.EVENT_SESSION_END, "");
+	  
+	  for (Pusher pusher : pushers) {
+		  pusher.onSessionStop();
+	  }
   }
   
   protected void recordEvent(long time) {
@@ -95,18 +104,62 @@ public class Session
 	  logEvent(event);
   }
   
-  public void logEvent(Event event) {
+  public synchronized void logEvent(Event event) {
 	  recordEvent(event.time);
 	  
 	  String entry = event.serialize();
-	  log += entry;
 	  
-	  if (printToConsole) System.out.print(entry);
-	  
-	  for (Pusher pusher : pushers) {
-		  pusher.pushEvent(event);
-	  }
+	  eventWriteLock.lock();        // writeLock anfordern. Blockiert solange, bis es verfügbar ist.
+      try {
+    	  log += entry;
+    	  
+    	  if (printToConsole) System.out.print(entry);
+    	  
+    	  for (Pusher pusher : pushers) {
+    		  pusher.pushEvent(event);
+    	  }
+      }
+      finally {
+    	  eventWriteLock.unlock();
+      }
   }
+  
+  /**
+   * Filesystem events.
+   */
+  
+  /**
+   *
+   * @param type
+   * @param path
+   * @throws Exception
+   */
+  public void recordFileEvent(String type, String path) throws Exception {
+	  if (!(type == Event.EVENT_FILE_CREATE || 
+			  type == Event.EVENT_FILE_DELETE ||
+			  type == Event.EVENT_FILE_MODIFY)) {
+		  throw new Exception("Invalid event type.");
+	  }
+	  logEvent(type, path);
+  }
+  
+  /**
+   * 
+   * @param type
+   * @param path
+   * @throws Exception
+   */
+  public void recordDirEvent(String type, String path) throws Exception {
+	  if (!(type == Event.EVENT_DIR_CREATE || 
+			  type == Event.EVENT_DIR_DELETE)) {
+		  throw new Exception("Invalid event type.");
+	  }
+	  logEvent(type, path);
+  }
+  
+  /**
+   * Keyboard and mouse events.
+   */
   
   public void recordKeyPress(int keyCode, long time) {
 	  logEvent(Event.EVENT_KEYPRESS, Integer.toString(keyCode), time);
@@ -187,4 +240,14 @@ public class Session
   public void addPusher(Pusher p) {
 	  pushers.add(p);
   }
+
+	public boolean isPrintToConsole() {
+		return printToConsole;
+	}
+	
+	public void setPrintToConsole(boolean printToConsole) {
+		this.printToConsole = printToConsole;
+	}
+  
+  
 }

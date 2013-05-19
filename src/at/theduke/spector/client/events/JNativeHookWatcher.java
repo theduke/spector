@@ -1,4 +1,4 @@
-package at.theduke.spector.client;
+package at.theduke.spector.client.events;
 
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
@@ -10,14 +10,17 @@ import org.jnativehook.mouse.NativeMouseMotionListener;
 
 import at.theduke.spector.Session;
 
-public class EventRecorder implements NativeKeyListener, NativeMouseListener, NativeMouseMotionListener
+public class JNativeHookWatcher extends BaseEventWatcher implements NativeKeyListener, NativeMouseListener, NativeMouseMotionListener
 {
 	GlobalScreen screen;
 	
-	Session session;
-	
-	public EventRecorder()
+	@Override
+	public void connect(Session session)
 	{
+		this.session = session;
+		
+		// Establish mouse and keyboard event listeners
+		// with the jNativeHook library.
 		try {
 			GlobalScreen.registerNativeHook();
 		} catch (NativeHookException ex) {

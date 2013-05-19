@@ -21,20 +21,18 @@ import org.eclipse.swt.widgets.TrayItem;
  * @author theduke
  *
  */
-public class Swt {
+public class Swt extends Thread {
 	Application application;
 	
 	Display display;
 	Shell shell;
 	TrayItem trayItem;
 	
-	public void run(Application app) {
-		this.application = app;
-		
+	public void run() {
 		display = new Display();
 		shell = new Shell();
 		
-		if (application.getConfig().guiEnabled) {
+		if (application.getConfig().isGuiEnabled()) {
 			initTray();
 		}
 		
@@ -106,7 +104,7 @@ public class Swt {
 		configItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent event) {
-				Configuration.showGUI(application);
+				//Configuration.showGUI(application);
 			}
 		});
 		
@@ -143,5 +141,9 @@ public class Swt {
 		tip.setText(text);
 		trayItem.setToolTip(tip);
 		tip.setVisible(true);
+	}
+	
+	public void setApplication(Application app) {
+		application = app;
 	}
 }

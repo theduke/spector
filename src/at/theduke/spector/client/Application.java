@@ -6,6 +6,7 @@ package at.theduke.spector.client;
 import at.theduke.spector.Session;
 import at.theduke.spector.client.Pusher.FilePusher;
 import at.theduke.spector.client.Pusher.SocketPusher;
+import at.theduke.spector.client.events.EventRecorder;
 
 /**
  * @author thedukelong time = e.getWhen();
@@ -13,7 +14,7 @@ import at.theduke.spector.client.Pusher.SocketPusher;
  */
 public class Application {
 
-	private ConfigData config;
+	private Configuration config;
 	private boolean notificationsEnabled = false;
 	
 	private Session session;
@@ -35,25 +36,20 @@ public class Application {
 	
 	public Application() 
 	{
-		config = Configuration.readConfiguration();
+		config = new Configuration();
+		config.load();
 		
 		session = new Session();
 		
 		// connect pushers
-		if (config.pushToFile) {
-			FilePusher pusher = new FilePusher(Configuration.getDataPath());
-			session.addPusher(pusher);
-		}
-		
-		if (config.pushToServer) {
-			SocketPusher pusher = new SocketPusher(config);
+		if (config.isPushToFile()) {
+			FilePusher pusher = new FilePusher(config.getDataPath());
 			session.addPusher(pusher);
 		}
 		
 		session.start(config);
 		
-		eventRecorder = new EventRecorder();
-		eventRecorder.session = session;
+		eventRecorder = new EventRecorder(session, config);
 		
 		// engage shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -65,16 +61,27 @@ public class Application {
 	}
 	
 	private void run() {
-		swtApp = new Swt();
-		swtApp.run(this);
+		
+		if (config.isGuiEnabled()) {
+			swtApp = new Swt();
+			swtApp.setApplication(this);
+			swtApp.start();
+		}
+		
+		while (true) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	public void doNotify() {
 		if (!(notificationsEnabled && (config != null) && config.isValid())) return;
 		
 		// add code for fetching and displaying notifications
-		
-		Configuration.writeConfiguration(config);
+		config.save();
 	}
 	
 	public void persistSession() {
@@ -98,14 +105,14 @@ public class Application {
 	/**
 	 * @return the config
 	 */
-	public ConfigData getConfig() {
+	public Configuration getConfig() {
 		return config;
 	}
 
 	/**
 	 * @param config the config to set
 	 */
-	public void setConfig(ConfigData config) {
+	public void setConfig(Configuration config) {
 		this.config = config;
 	}
 

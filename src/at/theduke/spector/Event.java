@@ -9,12 +9,36 @@ public class Event {
 	public static final String EVENT_SESSION_END = "session_end";
 	public static final String EVENT_SCREEN_RESOLUTION_SET = "screen_resolution";
 	
+	/**
+	 * Keyboard and mouse events.
+	 */
 	public static final String EVENT_KEYPRESS = "kp";
 	public static final String EVENT_MOUSECLICK = "mc";
 	public static final String EVENT_MOUSEMOVE = "mm";
 	
+	/**
+	 * Filesystem events.
+	 */
+	
+	public static final String EVENT_FILE_CREATE = "file_create";
+	public static final String EVENT_FILE_MODIFY = "file_modify";
+	public static final String EVENT_FILE_DELETE = "file_delete";
+	public static final String EVENT_DIR_CREATE = "dir_create";
+	public static final String EVENT_DIR_DELETE = "dir_delete";
+	
+	/**
+	 * Event type.
+	 */
 	String type;
+	
+	/**
+	 * Event-specifig data.
+	 */
 	String data;
+	
+	/**
+	 * Time the event happened.
+	 */
 	long time;
 	
 	public static Event parseEvent(String entry) {

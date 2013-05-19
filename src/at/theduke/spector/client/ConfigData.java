@@ -3,7 +3,9 @@
  */
 package at.theduke.spector.client;
 
-import java.net.UnknownHostException;
+import java.util.ArrayList;
+
+import at.theduke.spector.client.config.PathSpec;
 
 /**
  * @author theduke
@@ -11,7 +13,9 @@ import java.net.UnknownHostException;
  */
 public class ConfigData
 {
-	public boolean pushToServer = true;
+	public String dataPath = "";
+	
+	public boolean pushToServer = false;
 	public boolean pushToFile = true;
 	
 	public String serverHost = "localhost";
@@ -26,28 +30,5 @@ public class ConfigData
 	
 	public boolean guiEnabled = true;
 	
-	public ConfigData() {
-		try {
-			hostname = java.net.InetAddress.getLocalHost().getHostName();
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
-		
-		username = System.getProperty("user.name");
-	}
-	
-	public boolean isValid() {
-		if ((hostname.length() > 0)
-			&&(username.length() > 0) 
-			&& (serverHost.length() > 0) 
-			&& (serverPort > 0)) { 
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	public boolean authRequired() {
-		return authKey != null && authKey.length() > 0; 
-	}
+	public ArrayList<PathSpec> monitoredPaths = new ArrayList<PathSpec>();
 }
