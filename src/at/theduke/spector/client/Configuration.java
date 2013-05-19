@@ -118,20 +118,28 @@ public class Configuration {
 		data = readConfiguration(path);
 		
 		// Set default values.
+		
 		if (data.pushToFile) {
 			if (data.dataPath.length() < 1) {
 				data.dataPath = getDefaultDataPath();
 			}
 		}
 		
-		if (data.pushToServer) {
-			try {
-				data.hostname = java.net.InetAddress.getLocalHost().getHostName();
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-			}
+		// Set default watched directories.
+		if (data.monitoredPaths.size() < 1) {
+			String homePath = System.getProperty("user.home");
+			PathSpec spec = new PathSpec(homePath, 8, true);
+			data.monitoredPaths.add(spec);
 		}
 		
+		// Determine hostname.
+		try {
+			data.hostname = java.net.InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		
+		// Get current user's name.
 		if (data.username.length() < 1) {
 			data.username = System.getProperty("user.name");
 		}

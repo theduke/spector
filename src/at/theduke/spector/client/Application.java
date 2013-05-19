@@ -3,6 +3,12 @@
  */
 package at.theduke.spector.client;
 
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import at.theduke.spector.Session;
 import at.theduke.spector.client.Pusher.FilePusher;
 import at.theduke.spector.client.Pusher.SocketPusher;
@@ -13,6 +19,8 @@ import at.theduke.spector.client.events.EventRecorder;
  *
  */
 public class Application {
+	
+	static final Logger logger = getLogger();
 
 	private Configuration config;
 	private boolean notificationsEnabled = false;
@@ -34,8 +42,16 @@ public class Application {
 		app.run();
 	}
 	
+	public static Logger getLogger() {
+		Logger logger = LoggerFactory.getLogger("spector");
+		return logger;
+	}
+	
 	public Application() 
 	{
+		logger.info("Startup");
+		logger.debug("Test");
+		
 		config = new Configuration();
 		config.load();
 		
@@ -47,6 +63,7 @@ public class Application {
 			session.addPusher(pusher);
 		}
 		
+		logger.debug("Starting session.");
 		session.start(config);
 		
 		eventRecorder = new EventRecorder(session, config);
@@ -54,6 +71,7 @@ public class Application {
 		// engage shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
+            	logger.debug("Stopping session.");
             	session.stop();
                 persistSession();
             }
@@ -61,6 +79,7 @@ public class Application {
 	}
 	
 	private void run() {
+		logger.debug("Starting event loop");
 		
 		if (config.isGuiEnabled()) {
 			swtApp = new Swt();
@@ -71,6 +90,7 @@ public class Application {
 		while (true) {
 			try {
 				Thread.sleep(500);
+				session.clearAggregateData();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

@@ -19,14 +19,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardWatchEventKinds.*;
 
 import at.theduke.spector.Event;
 import at.theduke.spector.Session;
+import at.theduke.spector.client.Application;
 import at.theduke.spector.client.config.PathSpec;
 
-public class FilesystemWatcher extends ThreadedEventWatcher implements EventWatcher {
+public class FilesystemWatcher extends Thread implements EventWatcher {
+	
+	protected Logger logger;
+	protected Session session = null;
 	
 	/**
 	 * The paths that should be watched.
@@ -44,8 +50,21 @@ public class FilesystemWatcher extends ThreadedEventWatcher implements EventWatc
 		this.paths = paths;
 	}
 	
+	public void setSession(Session session) {
+		this.session = session;
+	}
+	
+	@Override
+    public void run() {
+		connect(session);
+	}
+	
 	@Override
 	public void connect(Session session) {
+		System.out.println("connect");
+		logger = Application.getLogger();
+		logger.debug("Connectin filesystem watcher.");
+		
 		this.session = session;
 		
 		try {
@@ -55,9 +74,9 @@ public class FilesystemWatcher extends ThreadedEventWatcher implements EventWatc
 				Path path = Paths.get(pathSpec.path);
 				registerAll(path, pathSpec.maxDepth, pathSpec.ignoreHidden);
 			}
-			System.out.println("Finished connecting watches.");
+			logger.debug("Finished connecting watches.");
         } catch (IOException e) {
-            System.out.println("IOException: "+ e.getMessage());
+            logger.error("IOException: "+ e.getMessage());
         }
 		
 		doWatch();
@@ -72,7 +91,7 @@ public class FilesystemWatcher extends ThreadedEventWatcher implements EventWatc
      * Register the given directory with the WatchService
      */
     protected void register(Path dir) throws IOException {
-    	System.out.println("Registering path " + dir.toAbsolutePath());
+    	logger.debug("Registering path " + dir.toAbsolutePath());
         WatchKey key = dir.register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
         keys.put(key, dir);
     }
@@ -107,7 +126,7 @@ public class FilesystemWatcher extends ThreadedEventWatcher implements EventWatc
                 	register(dir);
                 }
                 catch (IOException e) {
-                	System.out.println("Could not register path " + dir.toAbsolutePath() + ": " + e.getMessage());
+                	logger.warn("Could not register path " + dir.toAbsolutePath() + ": " + e.getMessage());
                 	return FileVisitResult.TERMINATE;
                 }
                 return FileVisitResult.CONTINUE;
@@ -118,7 +137,7 @@ public class FilesystemWatcher extends ThreadedEventWatcher implements EventWatc
 	protected void doWatch() {
 		WatchKey key = null;
 		
-		System.out.println("Starting to watch FS");
+		logger.debug("Starting to watch FS");
 		
         while(true) {
             try {
@@ -126,7 +145,7 @@ public class FilesystemWatcher extends ThreadedEventWatcher implements EventWatc
                 
                 Path dir = keys.get(key);
                 if (dir == null) {
-                    System.err.println("WatchKey not recognized!!");
+                    logger.warn("WatchKey not recognized!!");
                     continue;
                 }
                 
@@ -143,7 +162,7 @@ public class FilesystemWatcher extends ThreadedEventWatcher implements EventWatc
                     if (kind == ENTRY_CREATE) {
                         try {
                             if (Files.isDirectory(fullPath, NOFOLLOW_LINKS)) {
-                                registerAll(fullPath, 0, true);
+                                registerAll(fullPath, 1, true);
                             }
                         } catch (IOException x) {
                             // Ignore to keep running.
@@ -177,11 +196,9 @@ public class FilesystemWatcher extends ThreadedEventWatcher implements EventWatc
                     if (eventType != null) {
                     	session.logEvent(eventType, fullFilePath);
                     }
-                    
-                    System.out.println("Event on " + fullFilePath + " is " + kind);
                 }
             } catch (InterruptedException e) {
-                System.out.println("InterruptedException: " + e.getMessage());
+                logger.warn("InterruptedException: " + e.getMessage());
             }
             
             // Reset key and remove from set if directory no longer accessible.
@@ -204,10 +221,17 @@ public class FilesystemWatcher extends ThreadedEventWatcher implements EventWatc
     	paths.add(new PathSpec("/home/theduke", 5, true));
     	
     	watcher.setPaths(paths);
+    	watcher.setSession(new Session());
     	//watcher.connect(new Session());
+    	
+    	System.out.println("Start");
     	watcher.start();
     	while (true) {
-    		
+    		try {
+				Thread.sleep(600);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
     	}
     	
     }

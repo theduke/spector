@@ -24,9 +24,8 @@ public class JNativeHookWatcher extends BaseEventWatcher implements NativeKeyLis
 		try {
 			GlobalScreen.registerNativeHook();
 		} catch (NativeHookException ex) {
-			System.err
-					.println("There was a problem registering the native hook.");
-			System.err.println(ex.getMessage());
+			logger.error("There was a problem registering the native hook.");
+			logger.error(ex.getMessage());
 			ex.printStackTrace();
 		}
 		

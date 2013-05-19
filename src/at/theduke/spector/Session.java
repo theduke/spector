@@ -5,9 +5,11 @@ import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.slf4j.Logger;
 
 import org.jnativehook.mouse.NativeMouseEvent;
 
+import at.theduke.spector.client.Application;
 import at.theduke.spector.client.Configuration;
 import at.theduke.spector.client.Pusher.Pusher;
 
@@ -15,6 +17,8 @@ import com.mongodb.BasicDBObject;
 
 public class Session 
 {
+	static final Logger logger = Application.getLogger();
+	
   public static final int IDLE_TIME_LIMIT = 120 * 1000;
   public static final double MOUSE_MOVE_RECOGNITION_THRESHHOLD_PERCENT = 0.05;
   
@@ -113,7 +117,7 @@ public class Session
       try {
     	  log += entry;
     	  
-    	  if (printToConsole) System.out.print(entry);
+    	  if (printToConsole) logger.debug("Event: " + entry);
     	  
     	  for (Pusher pusher : pushers) {
     		  pusher.pushEvent(event);

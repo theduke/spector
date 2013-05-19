@@ -11,8 +11,7 @@ import at.theduke.spector.Event;
  * @author theduke
  *
  */
-public class FilePusher implements Pusher {
-	
+public class FilePusher extends BasePusher implements Pusher {
 	String filePath;
 	File file;
 	
@@ -45,11 +44,11 @@ public class FilePusher implements Pusher {
 		  } catch (IOException e) {
 			writer = null;
 			
-			System.out.println(e.getMessage());
+			logger.error("Could not open file writer: " + e.getMessage());
 			e.printStackTrace();
 		  }
 		
-		System.out.println("Opened file " + filePath + " for writing event data to.");
+		logger.debug("Opened file " + filePath + " for writing event data to.");
 	}
 	
 	@Override
@@ -64,10 +63,10 @@ public class FilePusher implements Pusher {
 					writer.flush();
 					eventCounter = 0;
 					
-					System.out.println("Flushed file pusher buffer.");
+					logger.debug("Flushed file pusher buffer.");
 				}
 			} catch (IOException e) {
-				System.out.println(e.getMessage());
+				logger.error("Could not write to file: " + e.getMessage());
 				e.printStackTrace();
 			}
 		}

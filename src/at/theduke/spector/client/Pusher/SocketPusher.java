@@ -10,7 +10,7 @@ import java.net.UnknownHostException;
 import at.theduke.spector.Event;
 import at.theduke.spector.client.ConfigData;
 
-public class SocketPusher implements Pusher
+public class SocketPusher extends BasePusher implements Pusher
 {
 	ConfigData config;
 	
