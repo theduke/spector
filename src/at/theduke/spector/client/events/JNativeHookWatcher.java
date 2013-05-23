@@ -1,5 +1,8 @@
 package at.theduke.spector.client.events;
 
+import java.awt.Dimension;
+import java.util.Date;
+
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 import org.jnativehook.keyboard.NativeKeyEvent;
@@ -12,7 +15,11 @@ import at.theduke.spector.Session;
 
 public class JNativeHookWatcher extends BaseEventWatcher implements NativeKeyListener, NativeMouseListener, NativeMouseMotionListener
 {
+	public static final double MOUSE_MOVE_RECOGNITION_THRESHHOLD_PERCENT = 0.05;
+	
 	GlobalScreen screen;
+	
+	private NativeMouseEvent lastMouseMove = null;
 	
 	@Override
 	public void connect(Session session)
@@ -41,13 +48,13 @@ public class JNativeHookWatcher extends BaseEventWatcher implements NativeKeyLis
      */
     public void nativeKeyPressed(NativeKeyEvent e) {
     	int keyCode = e.getKeyCode();
-    	session.recordKeyDown(keyCode, e.getWhen());
+    	session.recordKeyDown(keyCode, new Date(e.getWhen()));
     }
     
 	@Override
 	public void nativeKeyReleased(NativeKeyEvent e) {
 		int keyCode = e.getKeyCode();
-    	session.recordKeyUp(keyCode, e.getWhen());
+    	session.recordKeyUp(keyCode, new Date(e.getWhen()));
 	}
     
     /**
@@ -66,7 +73,38 @@ public class JNativeHookWatcher extends BaseEventWatcher implements NativeKeyLis
      * @see org.jnativehook.mouse.NativeMouseMotionListener#mouseMoved(org.jnativehook.mouse.NativeMouseEvent)
      */
     public void nativeMouseMoved(NativeMouseEvent e) {
-    	session.recordMouseMove(e);
+      	// determine whether to log the move.
+    	// Moves are only logged if either the x or y position
+    	// is at least MOUSE_MOVE_RECOGNITION_THRESHHOLD_PERCENT 
+    	// percent away from the last recorded position to avoid
+    	// flooding.
+    	
+    	boolean shouldLog = false;
+    	
+    	if (lastMouseMove == null) {
+    		shouldLog = true;
+    	}
+    	else {
+    		Dimension resolution = session.getScreenResolution();
+    		
+          	if (lastMouseMove != null) {
+	      		int deltaX = Math.abs(e.getX() - lastMouseMove.getX());
+	      		if ((float) deltaX / resolution.width > MOUSE_MOVE_RECOGNITION_THRESHHOLD_PERCENT) {
+	      			shouldLog = true;
+	      		}
+	      		else {
+	      			int deltaY = Math.abs(e.getY() - lastMouseMove.getY());
+	      			if ((float) deltaY / resolution.height > MOUSE_MOVE_RECOGNITION_THRESHHOLD_PERCENT) {
+	      				 shouldLog = true;
+	      			}
+	      		}
+          	}
+      	}
+      	
+      	if (shouldLog) {
+      		session.recordMouseMove(e.getX(), e.getY(), new Date(e.getWhen()));
+      		lastMouseMove = e;
+      	}
     }
 
 	@Override

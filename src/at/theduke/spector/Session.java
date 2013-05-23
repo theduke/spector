@@ -3,6 +3,7 @@ package at.theduke.spector;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.slf4j.Logger;
@@ -17,43 +18,25 @@ import com.mongodb.BasicDBObject;
 
 public class Session 
 {
-	static final Logger logger = Application.getLogger();
+  static final Logger logger = Application.getLogger();
 	
   public static final int IDLE_TIME_LIMIT = 120 * 1000;
-  public static final double MOUSE_MOVE_RECOGNITION_THRESHHOLD_PERCENT = 0.05;
   
-  public String id;
+  private String id;
   
-  public String hostname;
-  public String username;
+  private String hostname;
+  private String username;
 	
-  public long startTime;
-  public long idleTime = 0;
-  public long endTime;
+  private long startTime;
+  private long idleTime = 0;
+  private long endTime;
   
   ArrayList<Pusher> pushers = new ArrayList<Pusher>();
   
   private final ReentrantReadWriteLock eventReadWriteLock = new ReentrantReadWriteLock();
   private final Lock eventWriteLock = eventReadWriteLock.writeLock();
   
-  /*
-   * Text log of all events that occur during a session.
-   * Format:
-   * EVENT-TYPE:DATA|TIME-SINCE-SESSION-START-IN-MS
-   * 
-   *  Examples:
-   *  
-   *  KeyPress, data = keycode    -> kp:16|500
-   *  MouseClick, data = button,posX,posY   -> mc:1|1545
-   *  MouseMove, data = posX,posY -> mm:10,30|2203
-   */
-  protected String log = "";
-  
-  public ArrayList<Integer> keyCodes = new ArrayList<Integer>();
-  public ArrayList<NativeMouseEvent> mouseClicks = new ArrayList<NativeMouseEvent>();
-  public ArrayList<NativeMouseEvent> mouseMoves = new ArrayList<NativeMouseEvent>();
-  
-  public Dimension screenResolution;
+  private Dimension screenResolution;
   
   private BasicDBObject dbObject;
   
@@ -98,14 +81,17 @@ public class Session
   }
   
   public void logEvent(String type, String data) {
-	  logEvent(type, data, System.currentTimeMillis());
+	  logEvent(type, data, new Date());
   }
   
-  public void logEvent(String type, String data, long time) {
-	  // normalize time
-	  time = time - startTime;
-	  
-	  Event event = new Event(type, data, time);
+  /**
+   * 
+   * @param type
+   * @param data
+   * @param time Time as ISO8601 string.
+   */
+  public void logEvent(String type, String data, Date time) {
+	  Event event = new Event(type, data, time, this);
 	  logEvent(event);
   }
   
@@ -166,19 +152,19 @@ public class Session
    * Keyboard and mouse events.
    */
   
-  public void recordKeyPress(int keyCode, long time) {
+  public void recordKeyPress(int keyCode, Date time) {
 	  logEvent(Event.EVENT_KEYPRESS, Integer.toString(keyCode), time);
   }
   
-  public void recordKeyDown(int keyCode, long time) {
+  public void recordKeyDown(int keyCode, Date time) {
 	  logEvent(Event.EVENT_KEYDOWN, Integer.toString(keyCode), time);
   }
   
-  public void recordKeyUp(int keyCode, long time) {
+  public void recordKeyUp(int keyCode, Date time) {
 	  logEvent(Event.EVENT_KEYUP, Integer.toString(keyCode), time);
   }
   
-  public void recordMouseMove(int posX, int posY, long time) {
+  public void recordMouseMove(int posX, int posY, Date time) {
 	  String data = posX + "," + posY;
 	  logEvent(Event.EVENT_MOUSEMOVE, data, time);
   }
@@ -193,33 +179,6 @@ public class Session
 	
 	// ensure that idle time is reset, even if move is not logged
 	recordEvent(time);
-  	
-  	// determine whether to log the move
-  	int size = mouseMoves.size();
-  	if (size > 0)
-  	{
-  		NativeMouseEvent lastEvent = mouseMoves.get(size - 1);
-  		
-  		int deltaX = Math.abs(posX - lastEvent.getX());
-  		if ((float) deltaX / screenResolution.width > MOUSE_MOVE_RECOGNITION_THRESHHOLD_PERCENT)
-  		{
-  			shouldLog = true;
-  		}
-  		else
-  		{
-  			int deltaY = Math.abs(posY - lastEvent.getY());
-  			if ((float) deltaY / screenResolution.height > MOUSE_MOVE_RECOGNITION_THRESHHOLD_PERCENT) shouldLog = true;
-  		}
-  	}
-  	else
-  	{
-  		shouldLog = true;
-  	}
-  	
-  	if (shouldLog) {
-  		recordMouseMove(posX, posY, time);
-  		mouseMoves.add(e);
-  	}
   }
   
   public void recordMouseClick(int button, int posX, int posY, long time) {
@@ -235,14 +194,6 @@ public class Session
   public void recordMouseUp(int button, int posX, int posY, long time) {
 	  String data = button + "," + posX + "," + posY;
 	  logEvent(Event.EVENT_MOUSEUP, data, time);
-  }
-  
-  public void clearAggregateData()
-  {
-	  mouseClicks.clear();
-	  mouseMoves.clear();
-	  
-	  log = "";
   }
   
   public BasicDBObject getDbObject()
@@ -264,6 +215,54 @@ public class Session
 	  pushers.add(p);
   }
 
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	public String getHostname() {
+		return hostname;
+	}
+	
+	public void setHostname(String hostname) {
+		this.hostname = hostname;
+	}
+	
+	public String getUsername() {
+		return username;
+	}
+	
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	
+	public long getStartTime() {
+		return startTime;
+	}
+	
+	public void setStartTime(long startTime) {
+		this.startTime = startTime;
+	}
+	
+	public long getIdleTime() {
+		return idleTime;
+	}
+	
+	public void setIdleTime(long idleTime) {
+		this.idleTime = idleTime;
+	}
+	
+	public long getEndTime() {
+		return endTime;
+	}
+	
+	public void setEndTime(long endTime) {
+		this.endTime = endTime;
+	}
+
 	public boolean isPrintToConsole() {
 		return printToConsole;
 	}
@@ -271,6 +270,13 @@ public class Session
 	public void setPrintToConsole(boolean printToConsole) {
 		this.printToConsole = printToConsole;
 	}
-  
-  
+
+	public Dimension getScreenResolution() {
+		return screenResolution;
+	}
+
+	public void setScreenResolution(Dimension screenResolution) {
+		this.screenResolution = screenResolution;
+	}
+	
 }
