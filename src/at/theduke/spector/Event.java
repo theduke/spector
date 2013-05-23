@@ -1,112 +1,100 @@
 package at.theduke.spector;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Date;
+
+import com.google.gson.Gson;
 
 public class Event {
 
 	public static final String EVENT_SESSION_START = "session_start";
 	public static final String EVENT_SESSION_END = "session_end";
 	public static final String EVENT_SCREEN_RESOLUTION_SET = "screen_resolution";
-	
+	public static final String EVENT_KEYBOARD_LAYOUT_SET = "screen_resolution";
+
 	/**
 	 * Keyboard and mouse events.
 	 */
+	
 	public static final String EVENT_KEYPRESS = "key_press";
 	public static final String EVENT_KEYDOWN = "key_down";
 	public static final String EVENT_KEYUP = "key_up";
-	
+
 	public static final String EVENT_MOUSECLICK = "mouse_click";
 	public static final String EVENT_MOUSEDOWN = "mouse_down";
 	public static final String EVENT_MOUSEUP = "mouse_up";
 	public static final String EVENT_MOUSEMOVE = "mouse_move";
-	
+
 	/**
 	 * Filesystem events.
 	 */
-	
+
 	public static final String EVENT_FILE_CREATE = "file_create";
 	public static final String EVENT_FILE_MODIFY = "file_modify";
 	public static final String EVENT_FILE_DELETE = "file_delete";
 	public static final String EVENT_DIR_CREATE = "dir_create";
 	public static final String EVENT_DIR_DELETE = "dir_delete";
-	
+
 	/**
 	 * Event type.
 	 */
-	String type;
-	
+	public String type;
+
+	public String user;
+
+	public String host;
+
 	/**
-	 * Event-specifig data.
+	 * Session id.
+	 */
+	public String session;
+
+	/**
+	 * Priority between 0 and 1000.
+	 */
+	public int priority = 0;
+
+	/**
+	 * Event-specifig data. Either string or json.
 	 */
 	String data;
-	
+
 	/**
 	 * Time the event happened.
 	 */
-	long time;
-	
+	Date time;
+
 	public static Event parseEvent(String entry) {
-		Event e = new Event();
+		Gson gson = new Gson();
+		Event event = gson.fromJson(entry, Event.class);
 		
-		Pattern p = Pattern.compile("(.*)\\:(.*?)\\|([0-9]+)(\\n)?$");
-		Matcher m = p.matcher(entry);
-		
-		if (m.find()) {
-			e.setType(m.group(1));
-			e.setData(m.group(2));
-			e.setTime(Long.parseLong(m.group(3)));
-		}
-		else {
-			return null;
-		}
-		
-		return e;
+		return event;
 	}
-	
+
 	Event() {
-		
+
+	}
+
+	Event(String type, String data, Session session) {
+		this(type, data, new Date(), session);
 	}
 	
-	Event(String type, String data, long time) {
+	Event(String type, String data, Date time, Session session) {
 		this.type = type;
 		this.data = data;
+		this.user = session.getUsername();
+		this.host = session.getHostname();
+		this.session = session.getId();
 		this.time = time;
 	}
-	
+
+	/**
+	 * Serialize this event to JSON.
+	 *
+	 * @return Event as json string.
+	 */
 	public String serialize() {
-		String data = this.data;
-		
-		// prevent special characters in data
-		data = data.replace("|", ",");
-		data = data.replace("\n", "");
-		
-		String entry = type + ":" + data + "|" + time + "\n";
-		
-		return entry;
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	public String getData() {
-		return data;
-	}
-
-	public void setData(String data) {
-		this.data = data;
-	}
-
-	public long getTime() {
-		return time;
-	}
-
-	public void setTime(long time) {
-		this.time = time;
+		Gson gson = new Gson();
+		String json = gson.toJson(this);
+		return json;
 	}
 }
