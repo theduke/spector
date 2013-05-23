@@ -3,6 +3,10 @@ package at.theduke.spector;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 public class Utils {
 
@@ -32,6 +36,18 @@ public class Utils {
 		}
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * Retrieve the current time as an ISO8601 string.
+	 */
+	public static String getIso8601Time(Date date) {
+		TimeZone tz = TimeZone.getTimeZone("UTC");
+	    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+	    df.setTimeZone(tz);
+	    String nowAsISO = df.format(date);
+	    
+	    return nowAsISO;
 	}
 
 }
