@@ -52,7 +52,12 @@
   <!--Creates the deployable jar file  -->
   <target name="jar-client" depends="compile">
 
-    <jar destfile="${dist.dir}\spector-client.jar" basedir="${build.dir}">
+    <copy todir="build">
+        <fileset dir="src"
+                 includes="**/*.ico,**/*.png" />
+    </copy>
+
+    <jar destfile="${dist.dir}/spector-client.jar" basedir="${build.dir}">
       <zipgroupfileset dir="${lib.dir}" includes="*.jar" />
 
       <manifest>
