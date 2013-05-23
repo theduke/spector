@@ -5,7 +5,7 @@ import java.sql.*;
 import at.theduke.spector.server.ConfigData;
 
 public class Persistor {
-	
+
 	String SQL_CREATE_TABLE = "CREATE TABLE SESSIONS ("
 		+ "id VARCHAR(255) NOT NULL,"
 		+ "PRIMARY KEY (id),"
@@ -15,35 +15,35 @@ public class Persistor {
 		+ "start_time INT UNSIGNED,"
 		+ "end_time INT UNSIGNED,"
 		+ "log LONGTEXT;";
-	
+
 	Connection con;
-	
+
 	Connection getConnection(ConfigData config) {
 		Connection conn = null;
-		
+
 		String driver = "com.mysql.jdbc.Driver";
-		
-		String url = "jdbc:mysql://" + config.mysqlHost + ":" + 
+
+		String url = "jdbc:mysql://" + config.mysqlHost + ":" +
 		  config.mysqlPort + "/";
-		
+
 		String dbName = config.mysqlDb;
-		
+
 		String userName = config.mysqlUser;
 		String password = config.mysqlPassword;
-	
+
 		try {
 			Class.forName(driver).newInstance();
 			conn = DriverManager
 					.getConnection(url + dbName, userName, password);
-	
+
 			System.out.println("Connected to the database");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return conn;
-	} 
-	
+	}
+
 	boolean createTable() {
 		try {
 			if (!MysqlHelper.doesTableExist(con, "sessions")) {
@@ -53,28 +53,30 @@ public class Persistor {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			
+
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	public boolean initialize(ConfigData config) {
 		con = getConnection(config);
-		
+
 		if (con == null) {
 			System.out.println("Could not create MySQL connection");
 			return false;
 		}
-		
+
 		if (!createTable()) {
 			System.out.println("MysqlSessionTable does not exist and could not be created.");
 			return false;
 		}
-		
+
 		return true;
 	}
-	
-	public boolean ensureSessionExists()
+
+	public boolean ensureSessionExists() {
+		return false;
+	}
 }
