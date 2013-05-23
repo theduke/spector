@@ -3,15 +3,11 @@
  */
 package at.theduke.spector.client;
 
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.theduke.spector.Session;
 import at.theduke.spector.client.Pusher.FilePusher;
-import at.theduke.spector.client.Pusher.SocketPusher;
 import at.theduke.spector.client.events.EventRecorder;
 
 /**
@@ -90,6 +86,7 @@ public class Application {
 		while (true) {
 			try {
 				Thread.sleep(500);
+				eventRecorder.pollEvents();
 				session.clearAggregateData();
 			} catch (InterruptedException e) {
 				e.printStackTrace();

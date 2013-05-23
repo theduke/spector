@@ -41,15 +41,26 @@ public class JNativeHookWatcher extends BaseEventWatcher implements NativeKeyLis
      */
     public void nativeKeyPressed(NativeKeyEvent e) {
     	int keyCode = e.getKeyCode();
-    	session.recordKeyPress(keyCode, e.getWhen());
+    	session.recordKeyDown(keyCode, e.getWhen());
     }
+    
+	@Override
+	public void nativeKeyReleased(NativeKeyEvent e) {
+		int keyCode = e.getKeyCode();
+    	session.recordKeyUp(keyCode, e.getWhen());
+	}
     
     /**
      * @see org.jnativehook.mouse.NativeMouseListener#mousePressed(org.jnativehook.mouse.NativeMouseEvent)
      */
     public void nativeMousePressed(NativeMouseEvent e) {
-    	session.recordMouseClick(e.getButton(), e.getX(), e.getY(), e.getWhen());
+    	session.recordMouseDown(e.getButton(), e.getX(), e.getY(), e.getWhen());
     }
+    
+	@Override
+	public void nativeMouseReleased(NativeMouseEvent e) {
+		session.recordMouseUp(e.getButton(), e.getX(), e.getY(), e.getWhen());
+	}
     
     /**
      * @see org.jnativehook.mouse.NativeMouseMotionListener#mouseMoved(org.jnativehook.mouse.NativeMouseEvent)
@@ -61,30 +72,13 @@ public class JNativeHookWatcher extends BaseEventWatcher implements NativeKeyLis
 	@Override
 	public void nativeMouseDragged(NativeMouseEvent arg0) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
-	public void nativeMouseClicked(NativeMouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
+	public void nativeMouseClicked(NativeMouseEvent e) {
 	}
 
 	@Override
-	public void nativeMouseReleased(NativeMouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void nativeKeyReleased(NativeKeyEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void nativeKeyTyped(NativeKeyEvent arg0) {
-		// TODO Auto-generated method stub
-		
+	public void nativeKeyTyped(NativeKeyEvent e) {
 	}
 }

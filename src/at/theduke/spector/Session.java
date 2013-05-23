@@ -64,6 +64,10 @@ public class Session
 	  username = config.getUsername();
 	  
 	  startTime = endTime = System.currentTimeMillis();
+	  
+	  // Set initial screen resolution.
+	  // The systemEventWatcher will check if it changes and trigger screen
+	  // resolution events.
 	  screenResolution = Toolkit.getDefaultToolkit().getScreenSize();
 	  
 	  // calculate unique session id
@@ -74,9 +78,6 @@ public class Session
 	  }
 	  
 	  logEvent(Event.EVENT_SESSION_START, id);
-	  
-	  String resolution = screenResolution.width + "," + screenResolution.height;
-	  logEvent(Event.EVENT_SCREEN_RESOLUTION_SET, resolution);
   }
   
   public void stop() {
@@ -169,6 +170,14 @@ public class Session
 	  logEvent(Event.EVENT_KEYPRESS, Integer.toString(keyCode), time);
   }
   
+  public void recordKeyDown(int keyCode, long time) {
+	  logEvent(Event.EVENT_KEYDOWN, Integer.toString(keyCode), time);
+  }
+  
+  public void recordKeyUp(int keyCode, long time) {
+	  logEvent(Event.EVENT_KEYUP, Integer.toString(keyCode), time);
+  }
+  
   public void recordMouseMove(int posX, int posY, long time) {
 	  String data = posX + "," + posY;
 	  logEvent(Event.EVENT_MOUSEMOVE, data, time);
@@ -216,6 +225,16 @@ public class Session
   public void recordMouseClick(int button, int posX, int posY, long time) {
 	  String data = button + "," + posX + "," + posY;
 	  logEvent(Event.EVENT_MOUSECLICK, data, time);
+  }
+  
+  public void recordMouseDown(int button, int posX, int posY, long time) {
+	  String data = button + "," + posX + "," + posY;
+	  logEvent(Event.EVENT_MOUSEDOWN, data, time);
+  }
+  
+  public void recordMouseUp(int button, int posX, int posY, long time) {
+	  String data = button + "," + posX + "," + posY;
+	  logEvent(Event.EVENT_MOUSEUP, data, time);
   }
   
   public void clearAggregateData()

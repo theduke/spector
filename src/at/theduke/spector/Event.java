@@ -12,9 +12,14 @@ public class Event {
 	/**
 	 * Keyboard and mouse events.
 	 */
-	public static final String EVENT_KEYPRESS = "kp";
-	public static final String EVENT_MOUSECLICK = "mc";
-	public static final String EVENT_MOUSEMOVE = "mm";
+	public static final String EVENT_KEYPRESS = "key_press";
+	public static final String EVENT_KEYDOWN = "key_down";
+	public static final String EVENT_KEYUP = "key_up";
+	
+	public static final String EVENT_MOUSECLICK = "mouse_click";
+	public static final String EVENT_MOUSEDOWN = "mouse_down";
+	public static final String EVENT_MOUSEUP = "mouse_up";
+	public static final String EVENT_MOUSEMOVE = "mouse_move";
 	
 	/**
 	 * Filesystem events.
@@ -44,7 +49,7 @@ public class Event {
 	public static Event parseEvent(String entry) {
 		Event e = new Event();
 		
-		Pattern p = Pattern.compile("(.*)\\:(.*?)\\|([0-9]+)\\n");
+		Pattern p = Pattern.compile("(.*)\\:(.*?)\\|([0-9]+)(\\n)?$");
 		Matcher m = p.matcher(entry);
 		
 		if (m.find()) {
