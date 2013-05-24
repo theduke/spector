@@ -15,12 +15,31 @@ abstract public class BasePusher implements Pusher {
 	 */
 	static final int FLUSH_INTERVAL = 100;
 	
+	/**
+	 * If the priority of an event exceeds this limit,
+	 * the events are immediately pushed, even if the buffer is not 
+	 * full yet.
+	 */
+	static final int IMMEDIATE_FLUSH_PRIORITY_LIMIT = 700;
+	
 	ArrayList<Event> eventQueue = new ArrayList<Event>();
+	
+	protected String eventsToString(ArrayList<Event> events) {
+		StringBuilder builder = new StringBuilder();
+		
+		for (Event event : eventQueue) {
+			builder.append(event.serialize() + "\n");
+		}
+		
+		String data = builder.toString();
+		
+		return data;
+	}
 	
 	public void pushEvent(Event event) {
 		eventQueue.add(event);
 		
-		if (eventQueue.size() >= FLUSH_INTERVAL) {
+		if (eventQueue.size() >= FLUSH_INTERVAL || event.getPriority() >= IMMEDIATE_FLUSH_PRIORITY_LIMIT) {
 			doPush();
 			eventQueue.clear();
 		}
@@ -29,7 +48,7 @@ abstract public class BasePusher implements Pusher {
 	/**
 	 * Overwrite in child class!
 	 */
-	private void doPush() {
+	protected void doPush() {
 	}
 	
 	public void onSessionStop() {

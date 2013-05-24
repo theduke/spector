@@ -26,8 +26,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
-import at.theduke.spector.Event;
-
 /**
  * @author theduke
  * See https://gist.github.com/jabbrwcky/1751986.
@@ -89,9 +87,9 @@ public class HttpPusher extends BasePusher implements Pusher {
 		return sf;
 	}
 	
-	private void doPush() {
+	protected void doPush() {
 		try {
-			pushEvents();
+			executePush();
 		} catch (ClientProtocolException e) {
 			logger.error("Could not push events to " + serverUrl, e);
 		} catch (IOException e) {
@@ -99,14 +97,9 @@ public class HttpPusher extends BasePusher implements Pusher {
 		}
 	}
 	
-	private void pushEvents() throws ClientProtocolException, IOException {
-		StringBuilder builder = new StringBuilder();
-		
-		for (Event event : eventQueue) {
-			builder.append(event.serialize() + "\n");
-		}
-		
-		String data = builder.toString();
+	private void executePush() throws ClientProtocolException, IOException {
+		logger.debug("HttpPusher flushing " + Integer.toString(eventQueue.size()) + " events");
+		String data = eventsToString(eventQueue);
 		
 		// Build post request.
 		HttpPost post = new HttpPost(serverUrl);
@@ -124,13 +117,6 @@ public class HttpPusher extends BasePusher implements Pusher {
 		    EntityUtils.consume(entity2);
 		} finally {
 		    post.releaseConnection();
-		}
-	}
-
-	@Override
-	public void onSessionStop() {
-		if (eventQueue.size() > 0) {
-			doPush();
 		}
 	}
 }

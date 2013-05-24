@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import at.theduke.spector.Event;
-
 /**
  * @author theduke
  *
@@ -16,26 +14,12 @@ public class FilePusher extends BasePusher implements Pusher {
 	File file;
 	
 	BufferedWriter writer;
-	
-	
-	/**
-	 * The buffer will be flushed every interval events.
-	 */
-	static final int FLUSH_INTERVAL = 100;
-	
-	/**
-	 * Counter to enforce flushing in regular intervals.  
-	 */
-	int eventCounter = 0;
 
 	public FilePusher(String filePath) {
 		this.filePath = filePath;
-		
 	}
 	
 	public void onSessionStart(String id) {
-		filePath += "/" + id + ".session";
-		
 		file = new File(filePath);
 		
 		try {
@@ -51,20 +35,14 @@ public class FilePusher extends BasePusher implements Pusher {
 		logger.debug("Opened file " + filePath + " for writing event data to.");
 	}
 	
-	@Override
-	public void pushEvent(Event event) {
+	protected void doPush() {
 		if (writer != null) {
+			logger.debug("FilePusher flushing " + Integer.toString(eventQueue.size()) + " events");
+			String data = eventsToString(eventQueue);
+			
 			try {
-				writer.write(event.serialize());
-				
-				++eventCounter;
-				
-				if (eventCounter >= FLUSH_INTERVAL) {
-					writer.flush();
-					eventCounter = 0;
-					
-					logger.debug("Flushed file pusher buffer.");
-				}
+				writer.write(data);
+				writer.flush();
 			} catch (IOException e) {
 				logger.error("Could not write to file: " + e.getMessage());
 				e.printStackTrace();
@@ -74,6 +52,8 @@ public class FilePusher extends BasePusher implements Pusher {
 
 	@Override
 	public void onSessionStop() {
+		super.onSessionStop();
+		
 		try {
 			writer.flush();
 			writer.close();
