@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import at.theduke.spector.Session;
 import at.theduke.spector.client.Pusher.FilePusher;
+import at.theduke.spector.client.Pusher.StdOutPusher;
 import at.theduke.spector.client.events.EventRecorder;
 
 /**
@@ -54,15 +55,19 @@ public class Application {
 		session = new Session();
 		
 		// connect pushers
+		
+		session.addPusher(new StdOutPusher());
+		
 		if (config.isPushToFile()) {
 			FilePusher pusher = new FilePusher(config.getDataPath());
-			session.addPusher(pusher);
+			//session.addPusher(pusher);
 		}
 		
 		logger.debug("Starting session.");
 		session.start(config);
 		
 		eventRecorder = new EventRecorder(session, config);
+		eventRecorder.connect();
 		
 		// engage shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -87,7 +92,6 @@ public class Application {
 			try {
 				Thread.sleep(500);
 				eventRecorder.pollEvents();
-				session.clearAggregateData();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -102,7 +106,6 @@ public class Application {
 	}
 	
 	public void persistSession() {
-		session.clearAggregateData();
 	}
 
 	/**

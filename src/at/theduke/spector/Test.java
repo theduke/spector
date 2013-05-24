@@ -1,12 +1,8 @@
 package at.theduke.spector;
 
 import java.io.IOException;
-import java.util.Map;
 
-import at.theduke.spector.client.events.EventWatcher;
-import at.theduke.spector.client.events.JNativeHookWatcher;
-import at.theduke.spector.client.events.PolledEventWatcher;
-import at.theduke.spector.client.events.SystemWatcher;
+import at.theduke.spector.client.Pusher.HttpPusher;
 
 public class Test {
 
@@ -21,6 +17,19 @@ public class Test {
 			e.printStackTrace();
 		}
 		
+		testHttpPusher();
+		
+	}
+	
+	public static void testHttpPusher() {
+		Session s = new Session();
+		
+		HttpPusher p = new HttpPusher("https://localhost/dump.php", 443, true);
+		p.onSessionStart("11");
+		
+		for (int i = 0; i < 2; i++) {
+			p.pushEvent(new Event("test", "testdata", s));
+		}
 	}
 
 }

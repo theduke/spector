@@ -1,11 +1,12 @@
 package at.theduke.spector;
 
 import java.util.Date;
+import java.util.HashMap;
 
 import com.google.gson.Gson;
 
 public class Event {
-
+	
 	public static final String EVENT_SESSION_START = "session_start";
 	public static final String EVENT_SESSION_END = "session_end";
 	public static final String EVENT_SCREEN_RESOLUTION_SET = "screen_resolution";
@@ -37,21 +38,21 @@ public class Event {
 	/**
 	 * Event type.
 	 */
-	public String type;
+	private String type;
 
-	public String user;
+	private String user;
 
-	public String host;
+	private String host;
 
 	/**
 	 * Session id.
 	 */
-	public String session;
+	private String session;
 
 	/**
 	 * Priority between 0 and 1000.
 	 */
-	public int priority = 0;
+	private int priority = 0;
 
 	/**
 	 * Event-specifig data. Either string or json.
@@ -61,7 +62,7 @@ public class Event {
 	/**
 	 * Time the event happened.
 	 */
-	Date time;
+	String time;
 
 	public static Event parseEvent(String entry) {
 		Gson gson = new Gson();
@@ -73,18 +74,26 @@ public class Event {
 	Event() {
 
 	}
+	
+	public Event(String type, HashMap<String, String> data, Session session) {
+		this(type, new Gson().toJson(data), new Date(), session);
+	}
+	
+	public Event(String type, HashMap<String, String> data, Date time, Session session) {
+		this(type, new Gson().toJson(data), time, session);
+	}
 
-	Event(String type, String data, Session session) {
+	public Event(String type, String data, Session session) {
 		this(type, data, new Date(), session);
 	}
 	
-	Event(String type, String data, Date time, Session session) {
+	public Event(String type, String data, Date time, Session session) {
 		this.type = type;
 		this.data = data;
 		this.user = session.getUsername();
 		this.host = session.getHostname();
 		this.session = session.getId();
-		this.time = time;
+		this.time = Utils.getIso8601Time(time);
 	}
 
 	/**
@@ -96,5 +105,61 @@ public class Event {
 		Gson gson = new Gson();
 		String json = gson.toJson(this);
 		return json;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getUser() {
+		return user;
+	}
+
+	public void setUser(String user) {
+		this.user = user;
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
+
+	public String getSession() {
+		return session;
+	}
+
+	public void setSession(String session) {
+		this.session = session;
+	}
+
+	public int getPriority() {
+		return priority;
+	}
+
+	public void setPriority(int priority) {
+		this.priority = priority;
+	}
+
+	public String getData() {
+		return data;
+	}
+
+	public void setData(String data) {
+		this.data = data;
+	}
+
+	public Date getTime() {
+		return javax.xml.bind.DatatypeConverter.parseDateTime(time).getTime();
+	}
+
+	public void setTime(Date time) {
+		this.time = Utils.getIso8601Time(time);
 	}
 }

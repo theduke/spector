@@ -8,13 +8,13 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.slf4j.Logger;
 
-import org.jnativehook.mouse.NativeMouseEvent;
-
 import at.theduke.spector.client.Application;
 import at.theduke.spector.client.Configuration;
 import at.theduke.spector.client.Pusher.Pusher;
+import at.theduke.spector.eventdata.MouseClickData;
+import at.theduke.spector.eventdata.MouseMoveData;
 
-import com.mongodb.BasicDBObject;
+import com.google.gson.Gson;
 
 public class Session 
 {
@@ -38,9 +38,7 @@ public class Session
   
   private Dimension screenResolution;
   
-  private BasicDBObject dbObject;
-  
-  private boolean printToConsole = true;
+  private boolean printToConsole = false;
   
   public void start(Configuration config) {
 	  hostname = config.getHostname();
@@ -71,13 +69,13 @@ public class Session
 	  }
   }
   
-  protected void recordEvent(long time) {
-	  long timeSpan = time - endTime;
+  protected void recordEvent(Date date) {
+	  long timeSpan = date.getTime() - endTime;
 	  if (timeSpan >= IDLE_TIME_LIMIT) {
 		  idleTime += timeSpan;
 	  }
 
-	  endTime = time;
+	  endTime = date.getTime();
   }
   
   public void logEvent(String type, String data) {
@@ -96,14 +94,12 @@ public class Session
   }
   
   public synchronized void logEvent(Event event) {
-	  recordEvent(event.time);
+	  recordEvent(event.getTime());
 	  
 	  String entry = event.serialize();
 	  
 	  eventWriteLock.lock();        // writeLock anfordern. Blockiert solange, bis es verfügbar ist.
       try {
-    	  log += entry;
-    	  
     	  if (printToConsole) logger.debug("Event: " + entry);
     	  
     	  for (Pusher pusher : pushers) {
@@ -165,50 +161,23 @@ public class Session
   }
   
   public void recordMouseMove(int posX, int posY, Date time) {
-	  String data = posX + "," + posY;
+	  String data = new Gson().toJson(new MouseMoveData(posX, posY));
 	  logEvent(Event.EVENT_MOUSEMOVE, data, time);
   }
   
-  public void recordMouseMove(NativeMouseEvent e) {
-	boolean shouldLog = false;
-	
-	int posX = e.getX();
-	int posY = e.getY();
-	
-	long time = e.getWhen();
-	
-	// ensure that idle time is reset, even if move is not logged
-	recordEvent(time);
-  }
-  
-  public void recordMouseClick(int button, int posX, int posY, long time) {
-	  String data = button + "," + posX + "," + posY;
+  public void recordMouseClick(int button, int posX, int posY, Date time) {
+	  String data = new Gson().toJson(new MouseClickData(posX, posY, button));
 	  logEvent(Event.EVENT_MOUSECLICK, data, time);
   }
   
-  public void recordMouseDown(int button, int posX, int posY, long time) {
-	  String data = button + "," + posX + "," + posY;
+  public void recordMouseDown(int button, int posX, int posY, Date time) {
+	  String data = new Gson().toJson(new MouseClickData(posX, posY, button));
 	  logEvent(Event.EVENT_MOUSEDOWN, data, time);
   }
   
-  public void recordMouseUp(int button, int posX, int posY, long time) {
-	  String data = button + "," + posX + "," + posY;
+  public void recordMouseUp(int button, int posX, int posY, Date time) {
+	  String data = new Gson().toJson(new MouseClickData(posX, posY, button));
 	  logEvent(Event.EVENT_MOUSEUP, data, time);
-  }
-  
-  public BasicDBObject getDbObject()
-  {
-	  if (dbObject == null)
-	  {
-		  dbObject = new BasicDBObject();
-		  
-		  dbObject.put("startTime", startTime);
-	  }
-	  
-	  dbObject.put("idleTime", idleTime);
-	  dbObject.put("endTime", endTime);
-	  
-	  return dbObject;
   }
   
   public void addPusher(Pusher p) {

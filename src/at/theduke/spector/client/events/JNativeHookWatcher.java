@@ -41,6 +41,8 @@ public class JNativeHookWatcher extends BaseEventWatcher implements NativeKeyLis
 		screen.addNativeKeyListener(this);
 		screen.addNativeMouseListener(this);
 		screen.addNativeMouseMotionListener(this);
+		
+		logger.info("JNativeHookWatcher has connected.");
 	}
 	
 	 /**
@@ -61,12 +63,12 @@ public class JNativeHookWatcher extends BaseEventWatcher implements NativeKeyLis
      * @see org.jnativehook.mouse.NativeMouseListener#mousePressed(org.jnativehook.mouse.NativeMouseEvent)
      */
     public void nativeMousePressed(NativeMouseEvent e) {
-    	session.recordMouseDown(e.getButton(), e.getX(), e.getY(), e.getWhen());
+    	session.recordMouseDown(e.getButton(), e.getX(), e.getY(), new Date(e.getWhen()));
     }
     
 	@Override
 	public void nativeMouseReleased(NativeMouseEvent e) {
-		session.recordMouseUp(e.getButton(), e.getX(), e.getY(), e.getWhen());
+		session.recordMouseUp(e.getButton(), e.getX(), e.getY(), new Date(e.getWhen()));
 	}
     
     /**
@@ -108,8 +110,10 @@ public class JNativeHookWatcher extends BaseEventWatcher implements NativeKeyLis
     }
 
 	@Override
-	public void nativeMouseDragged(NativeMouseEvent arg0) {
-		// TODO Auto-generated method stub
+	public void nativeMouseDragged(NativeMouseEvent e) {
+		/**
+		 * @TODO implement drag event!
+		 */
 	}
 
 	@Override
