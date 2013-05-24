@@ -49,7 +49,7 @@
     </javadoc>
   </target>
 
-  <!--Creates the deployable jar file  -->
+  <!--Deployable CLIENT jar -->
   <target name="jar-client" depends="compile">
 
     <copy todir="build">
@@ -58,15 +58,32 @@
     </copy>
 
     <jar destfile="${dist.dir}/spector-client.jar" basedir="${build.dir}">
-      <zipgroupfileset dir="${lib.dir}" includes="*.jar" />
+      <zipgroupfileset dir="${lib.dir}" includes="**.jar" />
 
       <manifest>
         <attribute name="Main-Class" value="at.theduke.spector.client.Application" />
       </manifest>
     </jar>
   </target>
+	
+	<!--Deployable SERVER jar  -->
+  <target name="jar-server" depends="compile">
 
-  <target name="main" depends="compile, jar-client">
+    <copy todir="build">
+        <fileset dir="src"
+                 includes="**/*.ico,**/*.png" />
+    </copy>
+
+    <jar destfile="${dist.dir}/spector-client.jar" basedir="${build.dir}">
+      <zipgroupfileset dir="${lib.dir}" includes="**.jar" />
+
+      <manifest>
+        <attribute name="Main-Class" value="at.theduke.spector.server.Application" />
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="main" depends="compile, jar-client, jar-server">
     <description>Main target</description>
   </target>
 
