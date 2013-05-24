@@ -22,6 +22,8 @@ public class Session
 	
   public static final int IDLE_TIME_LIMIT = 120 * 1000;
   
+  public static final String SPECTOR_CLIENT_SOURCE = "spector_client";
+  
   private String id;
   
   private String hostname;
@@ -96,11 +98,13 @@ public class Session
   public synchronized void logEvent(Event event) {
 	  recordEvent(event.getTime());
 	  
-	  String entry = event.serialize();
+	  if (event.getSource() == null) {
+		  event.setSource(SPECTOR_CLIENT_SOURCE);
+	  }
 	  
 	  eventWriteLock.lock();        // writeLock anfordern. Blockiert solange, bis es verfügbar ist.
       try {
-    	  if (printToConsole) logger.debug("Event: " + entry);
+    	  if (printToConsole) logger.debug("Event: " + event.serialize());
     	  
     	  for (Pusher pusher : pushers) {
     		  pusher.pushEvent(event);

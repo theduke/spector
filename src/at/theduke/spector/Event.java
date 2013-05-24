@@ -43,6 +43,11 @@ public class Event {
 	private String user;
 
 	private String host;
+	
+	/**
+	 * Source application.
+	 */
+	private String source;
 
 	/**
 	 * Session id.
@@ -102,9 +107,18 @@ public class Event {
 	 * @return Event as json string.
 	 */
 	public String serialize() {
+		ensureValues();
+		
 		Gson gson = new Gson();
 		String json = gson.toJson(this);
 		return json;
+	}
+	
+	/**
+	 * Ensure that all properties have at least a default value.
+	 */
+	protected void ensureValues() {
+		
 	}
 
 	public String getType() {
@@ -162,4 +176,13 @@ public class Event {
 	public void setTime(Date time) {
 		this.time = Utils.getIso8601Time(time);
 	}
+
+	public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
+	}
+	
 }
