@@ -1,4 +1,4 @@
-package at.theduke.spector.client.Pusher;
+package at.theduke.spector.eventwriter;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -7,7 +7,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class SocketPusher extends BasePusher implements Pusher
+public class SocketWriter extends BaseWriter implements Writer
 {
 	String host;
 	int port;
@@ -15,7 +15,7 @@ public class SocketPusher extends BasePusher implements Pusher
 	Socket socket;
 	BufferedWriter socketWriter;
 	
-	public SocketPusher(String host, int port, boolean doGzip)  {
+	public SocketWriter(String host, int port, boolean doGzip)  {
 		this.host = host;
 		this.port = port;
 		this.doGzip = doGzip;

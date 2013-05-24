@@ -1,4 +1,4 @@
-package at.theduke.spector.client.Pusher;
+package at.theduke.spector.eventwriter;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -31,14 +31,14 @@ import org.apache.http.util.EntityUtils;
  * See https://gist.github.com/jabbrwcky/1751986.
  *
  */
-public class HttpPusher extends BasePusher implements Pusher {
+public class HttpWriter extends BaseWriter implements Writer {
 	String serverUrl;
 	int port;
 	boolean useSsl;
 	
 	HttpClient client;
 
-	public HttpPusher(String serverUrl, int port, boolean useSsl, boolean doGzip) {
+	public HttpWriter(String serverUrl, int port, boolean useSsl, boolean doGzip) {
 		this.serverUrl = serverUrl;
 		this.port = port;
 		this.useSsl = useSsl;

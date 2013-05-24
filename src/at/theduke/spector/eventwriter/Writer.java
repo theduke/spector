@@ -1,8 +1,8 @@
-package at.theduke.spector.client.Pusher;
+package at.theduke.spector.eventwriter;
 
 import at.theduke.spector.Event;
 
-public interface Pusher {
+public interface Writer {
 	
 	/**
 	 * This will always be called BEFORE pushEvent() is called.

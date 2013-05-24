@@ -1,8 +1,7 @@
-package at.theduke.spector.client.Pusher;
+package at.theduke.spector.eventwriter;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
 /**
@@ -10,7 +9,7 @@ import java.io.IOException;
  * @TODO properly implement gzipping, see http://stackoverflow.com/questions/5994674/java-save-string-as-gzip-file.
  *
  */
-public class FilePusher extends BasePusher implements Pusher {
+public class FileWriter extends BaseWriter implements Writer {
 	String filePath;
 	File file;
 	
@@ -22,7 +21,7 @@ public class FilePusher extends BasePusher implements Pusher {
 	
 	BufferedWriter writer;
 
-	public FilePusher(String filePath, boolean sessionFile, boolean doGzip) {
+	public FileWriter(String filePath, boolean sessionFile, boolean doGzip) {
 		this.filePath = filePath;
 		this.doGzip = doGzip;
 	}
@@ -37,7 +36,7 @@ public class FilePusher extends BasePusher implements Pusher {
 		file = new File(actualFilepath);
 		
 		try {
-			  writer = new BufferedWriter(new FileWriter(file, file.exists()));
+			  writer = new BufferedWriter(new java.io.FileWriter(file, file.exists()));
 
 		  } catch (IOException e) {
 			writer = null;

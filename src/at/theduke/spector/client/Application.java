@@ -7,9 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.theduke.spector.Session;
-import at.theduke.spector.client.Pusher.FilePusher;
-import at.theduke.spector.client.Pusher.StdOutPusher;
 import at.theduke.spector.client.events.EventRecorder;
+import at.theduke.spector.eventwriter.FileWriter;
+import at.theduke.spector.eventwriter.StdOutWriter;
 
 /**
  * @author thedukelong time = e.getWhen();
@@ -56,10 +56,10 @@ public class Application {
 		
 		// connect pushers
 		
-		session.addPusher(new StdOutPusher());
+		session.addPusher(new StdOutWriter());
 		
 		if (config.isPushToFile()) {
-			FilePusher pusher = new FilePusher(config.getDataPath(), true, false);
+			FileWriter pusher = new FileWriter(config.getDataPath(), true, false);
 			session.addPusher(pusher);
 		}
 		

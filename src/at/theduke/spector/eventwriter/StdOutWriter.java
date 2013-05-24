@@ -1,4 +1,4 @@
-package at.theduke.spector.client.Pusher;
+package at.theduke.spector.eventwriter;
 
 import java.io.IOException;
 
@@ -9,7 +9,7 @@ import at.theduke.spector.Utils;
  * @author theduke
  *
  */
-public class StdOutPusher extends BasePusher implements Pusher {
+public class StdOutWriter extends BaseWriter implements Writer {
 	
 	public void onSessionStart(String id) {
 		

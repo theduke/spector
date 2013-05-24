@@ -1,4 +1,4 @@
-package at.theduke.spector.client.Pusher;
+package at.theduke.spector.eventwriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ import at.theduke.spector.Event;
 import at.theduke.spector.Utils;
 import at.theduke.spector.client.Application;
 
-abstract public class BasePusher implements Pusher {
+abstract public class BaseWriter implements Writer {
 	static final Logger logger = Application.getLogger();
 	
 	/**

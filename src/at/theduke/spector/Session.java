@@ -10,9 +10,9 @@ import org.slf4j.Logger;
 
 import at.theduke.spector.client.Application;
 import at.theduke.spector.client.Configuration;
-import at.theduke.spector.client.Pusher.Pusher;
 import at.theduke.spector.eventdata.MouseClickData;
 import at.theduke.spector.eventdata.MouseMoveData;
+import at.theduke.spector.eventwriter.Writer;
 
 import com.google.gson.Gson;
 
@@ -33,7 +33,7 @@ public class Session
   private long idleTime = 0;
   private long endTime;
   
-  ArrayList<Pusher> pushers = new ArrayList<Pusher>();
+  ArrayList<Writer> pushers = new ArrayList<Writer>();
   
   private final ReentrantReadWriteLock eventReadWriteLock = new ReentrantReadWriteLock();
   private final Lock eventWriteLock = eventReadWriteLock.writeLock();
@@ -56,7 +56,7 @@ public class Session
 	  // calculate unique session id
 	  id = hostname + "-" + username + "-" + startTime;
 	  
-	  for (Pusher pusher : pushers) {
+	  for (Writer pusher : pushers) {
 		  pusher.onSessionStart(id);
 	  }
 	  
@@ -66,7 +66,7 @@ public class Session
   public void stop() {
 	  logEvent(Event.EVENT_SESSION_END, "");
 	  
-	  for (Pusher pusher : pushers) {
+	  for (Writer pusher : pushers) {
 		  pusher.onSessionStop();
 	  }
   }
@@ -106,7 +106,7 @@ public class Session
       try {
     	  if (printToConsole) logger.debug("Event: " + event.serialize());
     	  
-    	  for (Pusher pusher : pushers) {
+    	  for (Writer pusher : pushers) {
     		  pusher.pushEvent(event);
     	  }
       }
@@ -184,7 +184,7 @@ public class Session
 	  logEvent(Event.EVENT_MOUSEUP, data, time);
   }
   
-  public void addPusher(Pusher p) {
+  public void addPusher(Writer p) {
 	  pushers.add(p);
   }
 
