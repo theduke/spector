@@ -1,5 +1,6 @@
 package at.theduke.spector;
 
+import at.theduke.spector.eventwriter.ElasticSearchWriter;
 import at.theduke.spector.eventwriter.FileWriter;
 import at.theduke.spector.eventwriter.HttpWriter;
 import at.theduke.spector.eventwriter.SocketWriter;
@@ -15,6 +16,7 @@ public class Test {
 		//testFilePusher();
 		//testStdOutPusher();
 		//testSocketPusher();
+		testElasticSearchPusher();
 	}
 	
 	public static void testStdOutPusher() {
@@ -54,6 +56,19 @@ public class Test {
 		}
 		
 		p.onSessionStop();
+	}
+	
+	public static void testElasticSearchPusher() {
+		Session s = new Session();
+		
+		ElasticSearchWriter writer = new ElasticSearchWriter();
+		writer.onSessionStart("11");
+		
+		for (int i = 0; i < 300; i++) {
+			writer.pushEvent(new Event("test", "testdata", s));
+		}
+		
+		writer.onSessionStop();
 	}
 	
 	public static void testFilePusher() {

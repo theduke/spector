@@ -35,8 +35,18 @@ public class ElasticSearchWriter extends BaseWriter implements Writer {
 		this.esPort = port;
 	}
 	
+	public ElasticSearchWriter() {
+	}
+
 	@Override
 	protected void connect() {
+		
+		// Set log level to WARN for ES.
+		final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("org.elasticsearch");		
+		if ((logger instanceof ch.qos.logback.classic.Logger)) {
+			ch.qos.logback.classic.Logger logbackLogger = (ch.qos.logback.classic.Logger) logger;
+			logbackLogger.setLevel(ch.qos.logback.classic.Level.WARN);
+		}
 		
 		Settings settings = ImmutableSettings.settingsBuilder()
 		        .put("cluster.name", esCluster).build();
