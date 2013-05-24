@@ -29,6 +29,11 @@ public class ConfigData
 	public String lastNotificationId;
 	
 	public boolean guiEnabled = true;
+		
+	/**
+	 * Path to the db40 database.
+	 */
+	public String db4oPath = "";
 	
 	public ArrayList<PathSpec> monitoredPaths = new ArrayList<PathSpec>();
 }

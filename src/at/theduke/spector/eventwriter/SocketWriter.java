@@ -6,9 +6,17 @@ import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
-public class SocketWriter extends BaseWriter implements Writer
-{
+import at.theduke.spector.Event;
+
+public class SocketWriter extends BaseWriter implements Writer {
+	
+	/**
+	 * Unique writer identifier.
+	 */
+	static final String name = "socket";
+	
 	String host;
 	int port;
 	
@@ -21,22 +29,8 @@ public class SocketWriter extends BaseWriter implements Writer
 		this.doGzip = doGzip;
 	}
 	
-	public void onSessionStart(String id) {
-		connect();
-	}
-	
-	protected void doPush() {
-		String data = eventsToString(eventQueue, doGzip);
-		
-		try {
-			socketWriter.write(data);
-			socketWriter.flush();
-		} catch (IOException e) {
-			logger.error("Could not write to socket", e);
-		}
-	}
-	
-	protected boolean connect() {
+	@Override
+	protected void connect() {
 		try {
 		    InetAddress addr = InetAddress.getByName(host);
 
@@ -45,32 +39,44 @@ public class SocketWriter extends BaseWriter implements Writer
 		    
 		    socketWriter = new BufferedWriter(new OutputStreamWriter(
 		            socket.getOutputStream()));
-		    
 		} catch (UnknownHostException e) {
 			logger.error("COuld not reach host", e);
-			return false;
+			connected = false;
 		} catch (IOException e) {
 			logger.error("Could not open socket", e);
-			return false;
+			connected = false;
 		}
 		
-		logger.debug("Connected to server " + host + " on port " + Integer.toString(port));
+		connected = true;
 		
-		return true;
+		logger.debug("Connected to server " + host + " on port " + Integer.toString(port));
 	}
 	
-	void close() {
+	@Override
+	protected void close() {
 		try {
 			socketWriter.close();
 			socket.close();
 		} catch (IOException e) {
 			logger.error("Could not close socket", e);
 		}
+		
+		connected = false;
 	}
-
-	@Override
-	public void onSessionStop() {
-		super.onSessionStop();
-		close();
+	
+	protected ArrayList<Event> executeFlush(ArrayList<Event> events) {
+		String data = eventsToString(events, doGzip);
+		
+		logger.debug("Socketwriter is flushing " + events.size() + " events");
+		
+		try {
+			socketWriter.write(data);
+			socketWriter.flush();
+		} catch (IOException e) {
+			logger.error("Could not write to socket", e);
+			return events;
+		}
+		
+		return null;
 	}
 }

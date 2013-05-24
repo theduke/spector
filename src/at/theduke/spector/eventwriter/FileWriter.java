@@ -3,6 +3,9 @@ package at.theduke.spector.eventwriter;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+
+import at.theduke.spector.Event;
 
 /**
  * @author theduke
@@ -10,6 +13,12 @@ import java.io.IOException;
  *
  */
 public class FileWriter extends BaseWriter implements Writer {
+	
+	/**
+	 * Unique writer identifier.
+	 */
+	static final String name = "file";
+	
 	String filePath;
 	File file;
 	
@@ -26,52 +35,55 @@ public class FileWriter extends BaseWriter implements Writer {
 		this.doGzip = doGzip;
 	}
 	
-	public void onSessionStart(String id) {
+	@Override
+	protected void connect() {
 		String actualFilepath = filePath;
 		
 		if (sessionFile) {
-			actualFilepath += "/" + id;
+			actualFilepath += "/" + sessionId;
 		}
 		
 		file = new File(actualFilepath);
 		
 		try {
 			  writer = new BufferedWriter(new java.io.FileWriter(file, file.exists()));
-
 		  } catch (IOException e) {
 			writer = null;
+			connected = false;
 			
 			logger.error("Could not open file writer: " + e.getMessage());
 			e.printStackTrace();
+			
+			return;
 		  }
 		
+		connected = true;
 		logger.debug("Opened file " + actualFilepath + " for writing event data to.");
 	}
 	
-	protected void doPush() {
-		if (writer != null) {
-			logger.debug("FilePusher flushing " + Integer.toString(eventQueue.size()) + " events");
-			String data = eventsToString(eventQueue, doGzip);
-			
-			try {
-				writer.write(data);
-				writer.flush();
-			} catch (IOException e) {
-				logger.error("Could not write to file: " + e.getMessage());
-				e.printStackTrace();
-			}
-		}
-	}
-
 	@Override
-	public void onSessionStop() {
-		super.onSessionStop();
-		
+	protected void close() {
 		try {
 			writer.flush();
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		connected = false;
+	}
+
+	protected ArrayList<Event> executeFlush(ArrayList<Event> events) {
+		logger.debug("FilePusher flushing " + Integer.toString(events.size()) + " events");
+		String data = eventsToString(events, doGzip);
+
+		try {
+			writer.write(data);
+			writer.flush();
+		} catch (IOException e) {
+			return events;
+		}
+		
+		return null;
 	}
 }

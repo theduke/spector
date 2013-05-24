@@ -6,6 +6,10 @@ package at.theduke.spector.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.db4o.Db4o;
+import com.db4o.Db4oEmbedded;
+import com.db4o.ObjectContainer;
+
 import at.theduke.spector.Session;
 import at.theduke.spector.client.events.EventRecorder;
 import at.theduke.spector.eventwriter.FileWriter;
@@ -21,6 +25,8 @@ public class Application {
 
 	private Configuration config;
 	private boolean notificationsEnabled = false;
+	
+	ObjectContainer db;
 	
 	private Session session;
 	
@@ -51,6 +57,8 @@ public class Application {
 		
 		config = new Configuration();
 		config.load();
+		
+		db = Db4oEmbedded.openFile(config.getDb4oPath());
 		
 		session = new Session();
 		

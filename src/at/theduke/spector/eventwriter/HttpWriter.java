@@ -26,12 +26,20 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
+import at.theduke.spector.Event;
+
 /**
  * @author theduke
  * See https://gist.github.com/jabbrwcky/1751986.
  *
  */
 public class HttpWriter extends BaseWriter implements Writer {
+	
+	/**
+	 * Unique writer identifier.
+	 */
+	static final String name = "http";
+	
 	String serverUrl;
 	int port;
 	boolean useSsl;
@@ -45,7 +53,7 @@ public class HttpWriter extends BaseWriter implements Writer {
 		this.doGzip = doGzip;
 	}
 	
-	public void onSessionStart(String id) {
+	public void connect() {
 		client = new DefaultHttpClient();
 		SchemeRegistry sr = client.getConnectionManager().getSchemeRegistry();
 		
@@ -59,7 +67,14 @@ public class HttpWriter extends BaseWriter implements Writer {
 			sr.register(http);
 		}
 		
+		connected = true;
+		
 		logger.debug("Initialized httpPusher for url " + serverUrl);
+	}
+	
+	public void close() {
+		client = null;
+		connected = false;
 	}
 	
 	private SSLSocketFactory buildSSLSocketFactory() {
@@ -88,19 +103,23 @@ public class HttpWriter extends BaseWriter implements Writer {
 		return sf;
 	}
 	
-	protected void doPush() {
+	protected ArrayList<Event> executeFlush(ArrayList<Event> events) {
 		try {
-			executePush();
+			doPostRequest(events);
 		} catch (ClientProtocolException e) {
 			logger.error("Could not push events to " + serverUrl, e);
+			return events;
 		} catch (IOException e) {
 			logger.error("Could not push events to " + serverUrl, e);
+			return events;
 		}
+		
+		return null;
 	}
 	
-	private void executePush() throws ClientProtocolException, IOException {
-		logger.debug("HttpPusher flushing " + Integer.toString(eventQueue.size()) + " events");
-		String data = eventsToString(eventQueue, doGzip);
+	private void doPostRequest(ArrayList<Event> events) throws ClientProtocolException, IOException {
+		logger.debug("HttpPusher flushing " + Integer.toString(events.size()) + " events");
+		String data = eventsToString(events, doGzip);
 		
 		// Build post request.
 		HttpPost post = new HttpPost(serverUrl);
@@ -114,8 +133,6 @@ public class HttpWriter extends BaseWriter implements Writer {
 		try {
 		    System.out.println(response2.getStatusLine());
 		    HttpEntity entity2 = response2.getEntity();
-		    // do something useful with the response body
-		    // and ensure it is fully consumed
 		    EntityUtils.consume(entity2);
 		} finally {
 		    post.releaseConnection();

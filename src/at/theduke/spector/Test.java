@@ -13,7 +13,7 @@ public class Test {
 	public static void main(String[] args) {
 		//testHttpPusher();
 		//testFilePusher();
-		testStdOutPusher();
+		//testStdOutPusher();
 		//testSocketPusher();
 	}
 	
@@ -21,7 +21,6 @@ public class Test {
 		Session s = new Session();
 		
 		StdOutWriter p = new StdOutWriter();
-		p.setDoGzip(true);
 		p.onSessionStart("11");
 		
 		for (int i = 0; i < 300; i++) {
@@ -34,7 +33,7 @@ public class Test {
 	public static void testHttpPusher() {
 		Session s = new Session();
 		
-		HttpWriter p = new HttpWriter("https://localhost/dump.php", 443, true, true);
+		HttpWriter p = new HttpWriter("http://localhost/dev/test/dump.php", 80, false, false);
 		p.onSessionStart("11");
 		
 		for (int i = 0; i < 300; i++) {
@@ -47,7 +46,7 @@ public class Test {
 	public static void testSocketPusher() {
 		Session s = new Session();
 		
-		SocketWriter p = new SocketWriter("localhost", 3333, true);
+		SocketWriter p = new SocketWriter("localhost", 5555, false);
 		p.onSessionStart("11");
 		
 		for (int i = 0; i < 300; i++) {

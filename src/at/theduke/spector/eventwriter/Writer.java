@@ -22,4 +22,9 @@ public interface Writer {
 	 */
 	public void pushEvent(Event event);
 	
+	/**
+	 * FLush all queued events.
+	 */
+	public void flushEvents();
+	
 }

@@ -125,6 +125,10 @@ public class Configuration {
 			}
 		}
 		
+		if (data.db4oPath.length() < 1) {
+			data.db4oPath = getDefaultDb40Path();
+		}
+		
 		// Set default watched directories.
 		if (data.monitoredPaths.size() < 1) {
 			String homePath = System.getProperty("user.home");
@@ -155,6 +159,11 @@ public class Configuration {
 		String confPath = ".spector_client_config";
 		String path = System.getProperty("user.home") + System.getProperty("file.separator") + confPath;
 		
+		return path;
+	}
+	
+	public String getDefaultDb40Path() {
+		String path = System.getProperty("user.home") + System.getProperty("file.separator") + ".spector-db";
 		return path;
 	}
 	
@@ -242,4 +251,21 @@ public class Configuration {
 	public void setMonitoredPaths(ArrayList<PathSpec> monitoredPaths) {
 		this.data.monitoredPaths = monitoredPaths;
 	}
+	
+	public String getDb4oPath() {
+		return data.db4oPath;
+	}
+	
+	public void setDb40Path(String path) {
+		data.db4oPath = path;
+	}
+
+	public String getConfigPath() {
+		return configPath;
+	}
+
+	public void setConfigPath(String configPath) {
+		this.configPath = configPath;
+	}
+	
 }
