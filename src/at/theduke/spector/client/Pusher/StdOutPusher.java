@@ -1,6 +1,9 @@
 package at.theduke.spector.client.Pusher;
 
+import java.io.IOException;
+
 import at.theduke.spector.Event;
+import at.theduke.spector.Utils;
 
 /**
  * @author theduke
@@ -14,7 +17,17 @@ public class StdOutPusher extends BasePusher implements Pusher {
 	
 	@Override
 	public void pushEvent(Event event) {
-		System.out.println(event.serialize());
+		String output = event.serialize();
+		
+		if (doGzip) {
+			try {
+				output = Utils.doGzip(output);
+			} catch (IOException e) {
+				logger.error("COuld not gzip event", e);
+			}
+		}
+		
+		System.out.println(output);
 	}
 
 	@Override

@@ -59,8 +59,8 @@ public class Application {
 		session.addPusher(new StdOutPusher());
 		
 		if (config.isPushToFile()) {
-			FilePusher pusher = new FilePusher(config.getDataPath());
-			//session.addPusher(pusher);
+			FilePusher pusher = new FilePusher(config.getDataPath(), true, false);
+			session.addPusher(pusher);
 		}
 		
 		logger.debug("Starting session.");

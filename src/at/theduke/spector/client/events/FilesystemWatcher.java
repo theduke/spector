@@ -91,7 +91,7 @@ public class FilesystemWatcher extends Thread implements EventWatcher {
      * Register the given directory with the WatchService
      */
     protected void register(Path dir) throws IOException {
-    	logger.debug("Registering path " + dir.toAbsolutePath());
+    	//logger.debug("Registering path " + dir.toAbsolutePath());
         WatchKey key = dir.register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
         keys.put(key, dir);
     }

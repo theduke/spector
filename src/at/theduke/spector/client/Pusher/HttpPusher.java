@@ -38,10 +38,11 @@ public class HttpPusher extends BasePusher implements Pusher {
 	
 	HttpClient client;
 
-	public HttpPusher(String serverUrl, int port, boolean useSsl) {
+	public HttpPusher(String serverUrl, int port, boolean useSsl, boolean doGzip) {
 		this.serverUrl = serverUrl;
 		this.port = port;
 		this.useSsl = useSsl;
+		this.doGzip = doGzip;
 	}
 	
 	public void onSessionStart(String id) {
@@ -99,12 +100,13 @@ public class HttpPusher extends BasePusher implements Pusher {
 	
 	private void executePush() throws ClientProtocolException, IOException {
 		logger.debug("HttpPusher flushing " + Integer.toString(eventQueue.size()) + " events");
-		String data = eventsToString(eventQueue);
+		String data = eventsToString(eventQueue, doGzip);
 		
 		// Build post request.
 		HttpPost post = new HttpPost(serverUrl);
 		List <NameValuePair> nvps = new ArrayList <NameValuePair>();
 		nvps.add(new BasicNameValuePair("events", data));
+		nvps.add(new BasicNameValuePair("gzipped", doGzip ? "1" : "0"));
 		
 		post.setEntity(new UrlEncodedFormEntity(nvps));
 		

@@ -15,9 +15,10 @@ public class SocketPusher extends BasePusher implements Pusher
 	Socket socket;
 	BufferedWriter socketWriter;
 	
-	public SocketPusher(String host, int port)  {
+	public SocketPusher(String host, int port, boolean doGzip)  {
 		this.host = host;
 		this.port = port;
+		this.doGzip = doGzip;
 	}
 	
 	public void onSessionStart(String id) {
@@ -25,7 +26,7 @@ public class SocketPusher extends BasePusher implements Pusher
 	}
 	
 	protected void doPush() {
-		String data = eventsToString(eventQueue);
+		String data = eventsToString(eventQueue, doGzip);
 		
 		try {
 			socketWriter.write(data);

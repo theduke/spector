@@ -1,10 +1,12 @@
 package at.theduke.spector.client.Pusher;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.slf4j.Logger;
 
 import at.theduke.spector.Event;
+import at.theduke.spector.Utils;
 import at.theduke.spector.client.Application;
 
 abstract public class BasePusher implements Pusher {
@@ -22,9 +24,11 @@ abstract public class BasePusher implements Pusher {
 	 */
 	static final int IMMEDIATE_FLUSH_PRIORITY_LIMIT = 700;
 	
+	boolean doGzip = false;
+	
 	ArrayList<Event> eventQueue = new ArrayList<Event>();
 	
-	protected String eventsToString(ArrayList<Event> events) {
+	protected String eventsToString(ArrayList<Event> events, boolean gzip) {
 		StringBuilder builder = new StringBuilder();
 		
 		for (Event event : eventQueue) {
@@ -32,6 +36,14 @@ abstract public class BasePusher implements Pusher {
 		}
 		
 		String data = builder.toString();
+		
+		if (gzip) {
+			try {
+				data = Utils.doGzip(data);
+			} catch (IOException e) {
+				logger.error("Could not gzip event data!", e);
+			}
+		}
 		
 		return data;
 	}
@@ -56,4 +68,14 @@ abstract public class BasePusher implements Pusher {
 			doPush();
 		}
 	}
+
+	public boolean isDoGzip() {
+		return doGzip;
+	}
+
+	public void setDoGzip(boolean doGzip) {
+		this.doGzip = doGzip;
+	}
+	
+	
 }

@@ -1,10 +1,12 @@
 package at.theduke.spector;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.zip.GZIPOutputStream;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -15,7 +17,6 @@ public class Utils {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-
 	}
 	
 	public static String getCommandOutput(String cmd) throws InterruptedException, IOException {
@@ -47,5 +48,15 @@ public class Utils {
 	    String nowAsISO = DatatypeConverter.printDateTime(calendar);
 	    
 	    return nowAsISO;
+	}
+	
+	public static String doGzip(String content) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+        GZIPOutputStream gzipper = new GZIPOutputStream(out);
+        gzipper.write(content.getBytes());
+        gzipper.close();
+        String outStr = out.toString("UTF-8");
+        
+        return outStr;
 	}
 }
