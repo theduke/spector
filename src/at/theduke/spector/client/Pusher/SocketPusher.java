@@ -7,83 +7,37 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import at.theduke.spector.Event;
-import at.theduke.spector.client.ConfigData;
-
 public class SocketPusher extends BasePusher implements Pusher
 {
-	ConfigData config;
+	String host;
+	int port;
 	
 	Socket socket;
 	BufferedWriter socketWriter;
 	
-	boolean connected = false;
-	
-	/**
-	 * The buffer will be flushed every interval events.
-	 */
-	static final int FLUSH_INTERVAL = 100;
-	
-	/**
-	 * Counter to enforce flushing in regular intervals.  
-	 */
-	int eventCounter = 0;
-	
-	/*
-	 * We need to persist the session start event 
-	 * in case we need to reopen the connection and resend the
-	 * session-start.
-	 */
-	Event sessionStart;
-	
-	public SocketPusher(ConfigData c) 
-	{
-		config = c;
-		
-		connect();
+	public SocketPusher(String host, int port)  {
+		this.host = host;
+		this.port = port;
 	}
 	
 	public void onSessionStart(String id) {
-		
+		connect();
 	}
 	
-	public void pushEvent(Event entry) {
-		if (entry.getType() == Event.EVENT_SESSION_END) {
-			sessionStart = entry;
-		}
-		
-		if (!connected) {
-			// try to re-connect if no active socket con
-			boolean success = connect();
-			
-			// if the connection was re-opened, we need to 
-			// re-send the session-start event.
-			if (success && sessionStart != null && entry.getType() != Event.EVENT_SESSION_END) {
-				pushEvent(sessionStart);
-			}
-		}
+	protected void doPush() {
+		String data = eventsToString(eventQueue);
 		
 		try {
-			socketWriter.write(entry.serialize());
-			
-			++eventCounter;
-			
-			if (eventCounter >= FLUSH_INTERVAL) {
-				socketWriter.flush();
-			}
+			socketWriter.write(data);
+			socketWriter.flush();
 		} catch (IOException e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-			
-			// close the socket, try to re-open it later
-			close();
+			logger.error("Could not write to socket", e);
 		}
 	}
 	
 	protected boolean connect() {
 		try {
-		    InetAddress addr = InetAddress.getByName(config.serverHost);
-		    int port = config.serverPort;
+		    InetAddress addr = InetAddress.getByName(host);
 
 		    // This constructor will block until the connection succeeds
 		    socket = new Socket(addr, port);
@@ -92,21 +46,15 @@ public class SocketPusher extends BasePusher implements Pusher
 		            socket.getOutputStream()));
 		    
 		} catch (UnknownHostException e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-			
+			logger.error("COuld not reach host", e);
 			return false;
 		} catch (IOException e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-			
+			logger.error("Could not open socket", e);
 			return false;
 		}
 		
-		System.out.println("Opened connection to server " 
-		  + config.serverHost + " on port " + config.serverPort);
+		logger.debug("Connected to server " + host + " on port " + Integer.toString(port));
 		
-		connected = true;
 		return true;
 	}
 	
@@ -114,16 +62,14 @@ public class SocketPusher extends BasePusher implements Pusher
 		try {
 			socketWriter.close();
 			socket.close();
-			
-			connected = false;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Could not close socket", e);
 		}
 	}
 
 	@Override
 	public void onSessionStop() {
+		super.onSessionStop();
 		close();
 	}
 }
