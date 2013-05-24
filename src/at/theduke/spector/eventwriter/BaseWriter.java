@@ -11,6 +11,7 @@ import at.theduke.spector.Event;
 import at.theduke.spector.Utils;
 import at.theduke.spector.client.Application;
 import at.theduke.spector.eventdata.EventCollection;
+import at.theduke.spector.eventfilter.Filter;
 
 abstract public class BaseWriter implements Writer {
 	static final Logger logger = Application.getLogger();
@@ -35,6 +36,8 @@ abstract public class BaseWriter implements Writer {
 	protected String sessionId;
 	
 	protected boolean connected = false;
+	
+	protected Filter filter = null;
 	
 	boolean doGzip = false;
 	
@@ -94,6 +97,11 @@ abstract public class BaseWriter implements Writer {
 	}
 	
 	public void pushEvent(Event event) {
+		if (filter != null && filter.doFilter(event) == false) {
+			// Filter rejected the event.
+			return;
+		}
+		
 		eventQueue.add(event);
 		
 		if (eventQueue.size() >= FLUSH_INTERVAL || event.getPriority() >= IMMEDIATE_FLUSH_PRIORITY_LIMIT) {
