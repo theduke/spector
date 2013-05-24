@@ -27,6 +27,7 @@ public class JettyServer {
 	
 	public void run() {
 		
+		// Set log level to WARN for jetty.
 		final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("org.eclipse.jetty");
         if (!(logger instanceof ch.qos.logback.classic.Logger)) {
             return;
