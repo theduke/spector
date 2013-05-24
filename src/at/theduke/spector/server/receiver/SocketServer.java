@@ -1,4 +1,4 @@
-package at.theduke.spector.server;
+package at.theduke.spector.server.receiver;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
 
 public class SocketServer {
 	

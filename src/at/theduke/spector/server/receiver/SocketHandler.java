@@ -1,4 +1,4 @@
-package at.theduke.spector.server;
+package at.theduke.spector.server.receiver;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
