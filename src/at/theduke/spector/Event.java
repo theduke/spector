@@ -70,6 +70,10 @@ public class Event {
 	String time;
 
 	public static Event parseEvent(String entry) {
+		return fromJson(entry);
+	}
+	
+	public static Event fromJson(String entry) {
 		Gson gson = new Gson();
 		Event event = gson.fromJson(entry, Event.class);
 		
@@ -108,7 +112,10 @@ public class Event {
 	 */
 	public String serialize() {
 		ensureValues();
-		
+		return toJson();
+	}
+	
+	public String toJson() {
 		Gson gson = new Gson();
 		String json = gson.toJson(this);
 		return json;
