@@ -1,4 +1,4 @@
-package at.theduke.spector;
+package at.theduke.spector.client;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -8,11 +8,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.slf4j.Logger;
 
-import at.theduke.spector.client.Application;
-import at.theduke.spector.client.Configuration;
+import at.theduke.spector.Event;
 import at.theduke.spector.eventdata.MouseClickData;
 import at.theduke.spector.eventdata.MouseMoveData;
 import at.theduke.spector.eventwriter.Writer;
+import at.theduke.spector.session.ClientSessionHandler;
 
 import com.google.gson.Gson;
 
@@ -21,8 +21,6 @@ public class Session
   static final Logger logger = Application.getLogger();
 	
   public static final int IDLE_TIME_LIMIT = 120 * 1000;
-  
-  public static final String SPECTOR_CLIENT_SOURCE = "spector_client";
   
   private String id;
   
@@ -33,14 +31,17 @@ public class Session
   private long idleTime = 0;
   private long endTime;
   
-  ArrayList<Writer> pushers = new ArrayList<Writer>();
-  
-  private final ReentrantReadWriteLock eventReadWriteLock = new ReentrantReadWriteLock();
-  private final Lock eventWriteLock = eventReadWriteLock.writeLock();
+  ClientSessionHandler sessionHandler;
+  Writer eventWriter;
   
   private Dimension screenResolution;
   
   private boolean printToConsole = false;
+  
+  public Session(Writer eventWriter) {
+	  this.eventWriter = eventWriter;
+	  sessionHandler = new ClientSessionHandler(this);
+  }
   
   public void start(Configuration config) {
 	  hostname = config.getHostname();
@@ -56,9 +57,7 @@ public class Session
 	  // calculate unique session id
 	  id = hostname + "-" + username + "-" + startTime;
 	  
-	  for (Writer pusher : pushers) {
-		  pusher.onSessionStart(id);
-	  }
+	  eventWriter.onSessionStart(id);
 	  
 	  logEvent(Event.EVENT_SESSION_START, id);
   }
@@ -66,9 +65,7 @@ public class Session
   public void stop() {
 	  logEvent(Event.EVENT_SESSION_END, "");
 	  
-	  for (Writer pusher : pushers) {
-		  pusher.onSessionStop();
-	  }
+	  eventWriter.onSessionStop();
   }
   
   protected void recordEvent(Date date) {
@@ -99,20 +96,22 @@ public class Session
 	  recordEvent(event.getTime());
 	  
 	  if (event.getSource() == null) {
-		  event.setSource(SPECTOR_CLIENT_SOURCE);
+		  event.setSource(Application.SPECTOR_CLIENT_SOURCE);
 	  }
 	  
-	  eventWriteLock.lock();        // writeLock anfordern. Blockiert solange, bis es verfügbar ist.
-      try {
-    	  if (printToConsole) logger.debug("Event: " + event.serialize());
-    	  
-    	  for (Writer pusher : pushers) {
-    		  pusher.pushEvent(event);
-    	  }
-      }
-      finally {
-    	  eventWriteLock.unlock();
-      }
+	  // If debugging is enabled, print to console.
+	  // This should normally be achieved with the stdout writer.
+	  if (printToConsole) logger.debug("Event: " + event.serialize());
+	  
+	  // First, the sessionHandler gets the chance to handle the event.
+	  // Only if the sessionHandler does not deal with it,
+	  // it is immediately forwarded to the regular writer.
+	  // The sessionhandler will send session_update events itself
+	  // in appropriate intervals.
+	  
+	  if (!sessionHandler.pushEvent(event)) {
+		  eventWriter.pushEvent(event);
+	  }
   }
   
   /**
@@ -152,16 +151,16 @@ public class Session
    * Keyboard and mouse events.
    */
   
-  public void recordKeyPress(int keyCode, Date time) {
-	  logEvent(Event.EVENT_KEYPRESS, Integer.toString(keyCode), time);
+  public void recordKeyPress(String typed, Date time) {
+	  logEvent(Event.EVENT_KEYPRESS, typed, time);
   }
   
   public void recordKeyDown(int keyCode, Date time) {
 	  logEvent(Event.EVENT_KEYDOWN, Integer.toString(keyCode), time);
   }
   
-  public void recordKeyUp(int keyCode, Date time) {
-	  logEvent(Event.EVENT_KEYUP, Integer.toString(keyCode), time);
+  public void recordKeyUp(int keyCode, String description, Date time) {
+	  logEvent(Event.EVENT_KEYUP, keyCode + "," + description, time);
   }
   
   public void recordMouseMove(int posX, int posY, Date time) {
@@ -184,10 +183,6 @@ public class Session
 	  logEvent(Event.EVENT_MOUSEUP, data, time);
   }
   
-  public void addPusher(Writer p) {
-	  pushers.add(p);
-  }
-
 	public String getId() {
 		return id;
 	}

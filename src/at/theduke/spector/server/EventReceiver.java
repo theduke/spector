@@ -3,10 +3,17 @@ package at.theduke.spector.server;
 import org.slf4j.Logger;
 
 import at.theduke.spector.Event;
+import at.theduke.spector.eventwriter.PipeWriter;
 
 public class EventReceiver {
 	
 	protected final Logger logger = Application.getLogger();
+	
+	PipeWriter eventWriter = new PipeWriter();
+	
+	public EventReceiver() {
+		
+	}
 	
 	/**
 	 * 
@@ -38,6 +45,6 @@ public class EventReceiver {
 	}
 	
 	public void receiveEvent(Event event) {
-		logger.debug("Received event: " + event.serialize());
+		eventWriter.pushEvent(event);
 	}
 }

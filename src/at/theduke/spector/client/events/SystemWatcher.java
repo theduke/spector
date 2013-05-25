@@ -9,9 +9,9 @@ import java.io.InputStreamReader;
 import org.slf4j.Logger;
 
 import at.theduke.spector.Event;
-import at.theduke.spector.Session;
 import at.theduke.spector.Utils;
 import at.theduke.spector.client.Application;
+import at.theduke.spector.client.Session;
 
 public class SystemWatcher implements EventWatcher, PolledEventWatcher {
 	static final Logger logger = Application.getLogger();

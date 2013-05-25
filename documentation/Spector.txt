@@ -2,6 +2,7 @@ Spector
 =======
 
 Event:
+------
 
 An event is any ocurrence that should be recorded or action that should take place.
 
@@ -32,3 +33,47 @@ Fields:
 
   - time:string
       Iso8601 formatted datetime.
+      
+  - tags:list
+      List of tags(string) that this event has.
+
+Session:
+--------
+
+User session.
+
+Fields:
+  - id:string
+      Session id.
+      
+  - user:string
+      Username
+      
+  - host:string
+      Hostname
+      
+  - start:string
+      Starttime in iso8601.
+    
+  - end:string
+      Endtime in iso8601.
+      
+  - idletime:long
+      Time spent idle during the session.
+          
+  - resolution:string
+      Screen resolution of the session. Format: 1000x200.
+      
+  - keypresses:map
+      Hash that gives a press counter for each keycode.
+      
+  - mousepresses:map
+      Hash that vies a press counter for each mouse button.
+      
+  - mousedistance:long
+      Pixels traveled with the mouse.
+  
+  - textlog:string
+      Log of the text typed.
+  
+      

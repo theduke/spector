@@ -1,8 +1,11 @@
 package at.theduke.spector.server;
 
+import java.io.PipedWriter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import at.theduke.spector.eventwriter.PipeWriter;
 import at.theduke.spector.server.http.JettyServer;
 
 public class Application {
@@ -10,7 +13,6 @@ public class Application {
 	EventReceiver eventReceiver;
 	
 	JettyServer httpServer;
-	
 	
 	public static void main(String[] args) {
 		Application app = new Application();

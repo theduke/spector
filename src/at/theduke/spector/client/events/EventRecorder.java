@@ -2,9 +2,9 @@ package at.theduke.spector.client.events;
 
 import java.util.ArrayList;
 
-import at.theduke.spector.Session;
 import at.theduke.spector.client.Application;
 import at.theduke.spector.client.Configuration;
+import at.theduke.spector.client.Session;
 
 public class EventRecorder
 {

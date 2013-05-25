@@ -17,9 +17,11 @@ public class StdOutWriter implements Writer {
 	}
 	
 	@Override
-	public void pushEvent(Event event) {
+	public boolean pushEvent(Event event) {
 		String output = event.serialize();
 		System.out.println(output);
+		
+		return true;
 	}
 
 	@Override

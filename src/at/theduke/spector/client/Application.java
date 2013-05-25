@@ -10,9 +10,9 @@ import com.db4o.Db4o;
 import com.db4o.Db4oEmbedded;
 import com.db4o.ObjectContainer;
 
-import at.theduke.spector.Session;
 import at.theduke.spector.client.events.EventRecorder;
 import at.theduke.spector.eventwriter.FileWriter;
+import at.theduke.spector.eventwriter.PipeWriter;
 import at.theduke.spector.eventwriter.StdOutWriter;
 
 /**
@@ -20,6 +20,7 @@ import at.theduke.spector.eventwriter.StdOutWriter;
  *
  */
 public class Application {
+	public static final String SPECTOR_CLIENT_SOURCE = "spector_client";
 	
 	static final Logger logger = getLogger();
 
@@ -29,10 +30,10 @@ public class Application {
 	ObjectContainer db;
 	
 	private Session session;
+	PipeWriter eventWriter = new PipeWriter();
 	
 	private Fetcher fetcher;
 	private EventRecorder eventRecorder;
-	
 	
 	private Swt swtApp;
 	
@@ -60,15 +61,15 @@ public class Application {
 		
 		db = Db4oEmbedded.openFile(config.getDb4oPath());
 		
-		session = new Session();
+		session = new Session(eventWriter);
 		
 		// connect pushers
 		
-		session.addPusher(new StdOutWriter());
+		eventWriter.addWriter(new StdOutWriter());
 		
 		if (config.isPushToFile()) {
 			FileWriter pusher = new FileWriter(config.getDataPath(), true, false);
-			session.addPusher(pusher);
+			//eventWriter.addWriter(pusher);
 		}
 		
 		logger.debug("Starting session.");

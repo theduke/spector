@@ -25,8 +25,8 @@ import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardWatchEventKinds.*;
 
 import at.theduke.spector.Event;
-import at.theduke.spector.Session;
 import at.theduke.spector.client.Application;
+import at.theduke.spector.client.Session;
 import at.theduke.spector.client.config.PathSpec;
 
 public class FilesystemWatcher extends Thread implements EventWatcher {
@@ -213,26 +213,4 @@ public class FilesystemWatcher extends Thread implements EventWatcher {
             }
         }
 	}
-	
-    public static void main(String[] args) throws IOException {
-    	FilesystemWatcher watcher = new FilesystemWatcher();
-    	
-    	ArrayList<PathSpec> paths = new ArrayList<PathSpec>();
-    	paths.add(new PathSpec("/home/theduke", 5, true));
-    	
-    	watcher.setPaths(paths);
-    	watcher.setSession(new Session());
-    	//watcher.connect(new Session());
-    	
-    	System.out.println("Start");
-    	watcher.start();
-    	while (true) {
-    		try {
-				Thread.sleep(600);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-    	}
-    	
-    }
 }

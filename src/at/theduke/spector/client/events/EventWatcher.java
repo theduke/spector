@@ -1,6 +1,6 @@
 package at.theduke.spector.client.events;
 
-import at.theduke.spector.Session;
+import at.theduke.spector.client.Session;
 
 public interface EventWatcher {
 	

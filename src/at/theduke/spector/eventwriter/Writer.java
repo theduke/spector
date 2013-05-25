@@ -19,8 +19,9 @@ public interface Writer {
 	
 	/**
 	 * @param event
+	 * @return Whether the event was handled by the writer or not.
 	 */
-	public void pushEvent(Event event);
+	public boolean pushEvent(Event event);
 	
 	/**
 	 * FLush all queued events.

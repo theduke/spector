@@ -11,7 +11,7 @@ import org.jnativehook.mouse.NativeMouseEvent;
 import org.jnativehook.mouse.NativeMouseListener;
 import org.jnativehook.mouse.NativeMouseMotionListener;
 
-import at.theduke.spector.Session;
+import at.theduke.spector.client.Session;
 
 public class JNativeHookWatcher extends BaseEventWatcher implements NativeKeyListener, NativeMouseListener, NativeMouseMotionListener
 {
@@ -49,14 +49,15 @@ public class JNativeHookWatcher extends BaseEventWatcher implements NativeKeyLis
      * @see org.jnativehook.keyboard.NativeKeyListener#keyPressed(org.jnativehook.keyboard.NativeKeyEvent)
      */
     public void nativeKeyPressed(NativeKeyEvent e) {
-    	int keyCode = e.getKeyCode();
-    	session.recordKeyDown(keyCode, new Date(e.getWhen()));
+    	//int keyCode = e.getKeyCode();
+    	//session.recordKeyDown(keyCode, new Date(e.getWhen()));    	
     }
-    
+
 	@Override
 	public void nativeKeyReleased(NativeKeyEvent e) {
 		int keyCode = e.getKeyCode();
-    	session.recordKeyUp(keyCode, new Date(e.getWhen()));
+		String descr = NativeKeyEvent.getKeyText(e.getKeyCode());
+    	session.recordKeyUp(keyCode, descr, new Date(e.getWhen()));
 	}
     
     /**
@@ -122,5 +123,20 @@ public class JNativeHookWatcher extends BaseEventWatcher implements NativeKeyLis
 
 	@Override
 	public void nativeKeyTyped(NativeKeyEvent e) {
+    	/*
+    	System.out.println(e.getRawCode());
+    	System.out.println(e.getKeyCode());
+    	
+    	aber bitte mit sahne#'!@@²ł@~~#@'@äÄöläöülöä
+    	System.out.println(e.getKeyLocation());
+    	System.out.println(e.getModifiers());
+    	*/
+    	//System.out.println(e.getKeyChar());
+    	//System.out.println(NativeKeyEvent.getKeyText(e.getKeyCode()));
+    	//System.out.println(NativeKeyEvent.getModifiersText(e.getModifiers()));
+    	//System.out.println(NativeKeyEvent.getKeyText(e.getKeyCode()));
+		
+		String typed = new String(Character.toChars(e.getKeyChar()));
+		session.recordKeyPress(typed, new Date(e.getWhen()));
 	}
 }

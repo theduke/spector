@@ -96,10 +96,10 @@ abstract public class BaseWriter implements Writer {
 		
 	}
 	
-	public void pushEvent(Event event) {
+	public boolean pushEvent(Event event) {
 		if (filter != null && filter.doFilter(event) == false) {
 			// Filter rejected the event.
-			return;
+			return false;
 		}
 		
 		eventQueue.add(event);
@@ -107,6 +107,8 @@ abstract public class BaseWriter implements Writer {
 		if (eventQueue.size() >= FLUSH_INTERVAL || event.getPriority() >= IMMEDIATE_FLUSH_PRIORITY_LIMIT) {
 			flushEvents();
 		}
+		
+		return true;
 	}
 	
 	/**

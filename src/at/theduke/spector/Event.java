@@ -1,16 +1,21 @@
 package at.theduke.spector;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+
+import at.theduke.spector.client.Session;
 
 import com.google.gson.Gson;
 
 public class Event {
 	
 	public static final String EVENT_SESSION_START = "session_start";
+	public static final String EVENT_SESSION_UPDATE = "session_update";
 	public static final String EVENT_SESSION_END = "session_end";
-	public static final String EVENT_SCREEN_RESOLUTION_SET = "screen_resolution";
-	public static final String EVENT_KEYBOARD_LAYOUT_SET = "screen_resolution";
+	
+	public static final String EVENT_SCREEN_RESOLUTION_SET = "screen_resolution_set";
+	public static final String EVENT_KEYBOARD_LAYOUT_SET = "keyboard_layout_set";
 
 	/**
 	 * Keyboard and mouse events.
@@ -34,6 +39,13 @@ public class Event {
 	public static final String EVENT_FILE_DELETE = "file_delete";
 	public static final String EVENT_DIR_CREATE = "dir_create";
 	public static final String EVENT_DIR_DELETE = "dir_delete";
+	
+	/**
+	 * Web events
+	 */
+	
+	public static final String EVENT_WEBISTE_OPEN = "website_open";
+	
 
 	/**
 	 * Event type.
@@ -68,6 +80,8 @@ public class Event {
 	 * Time the event happened.
 	 */
 	String time;
+	
+	ArrayList<String> tags = new ArrayList<String>();
 
 	public static Event parseEvent(String entry) {
 		return fromJson(entry);
@@ -179,6 +193,10 @@ public class Event {
 	public Date getTime() {
 		return javax.xml.bind.DatatypeConverter.parseDateTime(time).getTime();
 	}
+	
+	public String getIsoTime() {
+		return time;
+	}
 
 	public void setTime(Date time) {
 		this.time = Utils.getIso8601Time(time);
@@ -191,5 +209,16 @@ public class Event {
 	public void setSource(String source) {
 		this.source = source;
 	}
+
+	public ArrayList<String> getTags() {
+		return tags;
+	}
+
+	public void setTags(ArrayList<String> tags) {
+		this.tags = tags;
+	}
 	
+	public void addTag(String tag) {
+		tags.add(tag);
+	}
 }
