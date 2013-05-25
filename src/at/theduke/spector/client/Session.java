@@ -92,6 +92,12 @@ public class Session
 	  logEvent(event);
   }
   
+  public void logEvent(String type, String data, int priority) {
+	  Event event = new Event(type, data, new Date(), this);
+	  event.setPriority(priority);
+	  logEvent(event);
+  }
+  
   public synchronized void logEvent(Event event) {
 	  recordEvent(event.getTime());
 	  

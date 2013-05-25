@@ -15,6 +15,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.scheme.PlainSocketFactory;
@@ -22,6 +23,7 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
@@ -105,6 +107,7 @@ public class HttpWriter extends BaseWriter implements Writer {
 	
 	protected ArrayList<Event> executeFlush(ArrayList<Event> events) {
 		try {
+
 			doPostRequest(events);
 		} catch (ClientProtocolException e) {
 			logger.error("Could not push events to " + serverUrl, e);
@@ -134,6 +137,8 @@ public class HttpWriter extends BaseWriter implements Writer {
 		    System.out.println(response2.getStatusLine());
 		    HttpEntity entity2 = response2.getEntity();
 		    EntityUtils.consume(entity2);
+		    
+		    System.out.print(entity2.getContent());
 		} finally {
 		    post.releaseConnection();
 		}

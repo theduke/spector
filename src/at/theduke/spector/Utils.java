@@ -10,6 +10,12 @@ import java.util.zip.GZIPOutputStream;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
+
 public class Utils {
 
 	/**
@@ -58,5 +64,22 @@ public class Utils {
         String outStr = out.toString("UTF-8");
         
         return outStr;
+	}
+	
+	public static Client getElasticSearchConnection(String clusterName, String host, int port) {
+		// Set log level to WARN for ES.
+		final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("org.elasticsearch");		
+		if ((logger instanceof ch.qos.logback.classic.Logger)) {
+			ch.qos.logback.classic.Logger logbackLogger = (ch.qos.logback.classic.Logger) logger;
+			logbackLogger.setLevel(ch.qos.logback.classic.Level.WARN);
+		}
+		
+		Settings settings = ImmutableSettings.settingsBuilder()
+		        .put("cluster.name", clusterName).build();
+		
+		Client esClient = new TransportClient(settings)
+        	.addTransportAddress(new InetSocketTransportAddress(host, port));
+		
+		return esClient;
 	}
 }

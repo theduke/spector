@@ -53,7 +53,7 @@ public class ClientSessionHandler implements Writer {
 	
 	private void updateSession(SessionData session) {
 		Session baseSession = session;
-		clientSession.logEvent(Event.EVENT_SESSION_UPDATE, baseSession.toJson());
+		clientSession.logEvent(Event.EVENT_SESSION_UPDATE, baseSession.toJson(), 510);
 		
 		session.clearAggregateData();
 		session.changeCounter = 0;
@@ -109,7 +109,6 @@ public class ClientSessionHandler implements Writer {
 				// Add certain important keys to the log.
 				String description = parts[1];
 				
-				System.out.println(description);					
 				if (description.equals("Enter") 
 						|| description.equals("Tab")
 						|| description.equals("Delete")

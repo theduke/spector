@@ -12,6 +12,7 @@ import com.db4o.ObjectContainer;
 
 import at.theduke.spector.client.events.EventRecorder;
 import at.theduke.spector.eventwriter.FileWriter;
+import at.theduke.spector.eventwriter.HttpWriter;
 import at.theduke.spector.eventwriter.PipeWriter;
 import at.theduke.spector.eventwriter.StdOutWriter;
 
@@ -67,10 +68,15 @@ public class Application {
 		
 		eventWriter.addWriter(new StdOutWriter());
 		
+		/*
 		if (config.isPushToFile()) {
 			FileWriter pusher = new FileWriter(config.getDataPath(), true, false);
-			//eventWriter.addWriter(pusher);
+			eventWriter.addWriter(pusher);
 		}
+		*/
+		
+		// Add http writer.
+		eventWriter.addWriter(new HttpWriter("http://localhost/events/submit/", 8081, false, false));
 		
 		logger.debug("Starting session.");
 		session.start(config);

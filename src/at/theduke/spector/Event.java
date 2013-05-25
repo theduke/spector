@@ -94,7 +94,7 @@ public class Event {
 		return event;
 	}
 
-	Event() {
+	public Event() {
 
 	}
 	

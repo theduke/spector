@@ -31,7 +31,7 @@ abstract public class BaseWriter implements Writer {
 	 * the events are immediately pushed, even if the buffer is not 
 	 * full yet.
 	 */
-	static final int IMMEDIATE_FLUSH_PRIORITY_LIMIT = 700;
+	static final int IMMEDIATE_FLUSH_PRIORITY_LIMIT = 500;
 	
 	protected String sessionId;
 	

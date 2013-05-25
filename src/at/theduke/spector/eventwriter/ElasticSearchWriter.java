@@ -11,6 +11,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
 import at.theduke.spector.Event;
+import at.theduke.spector.Utils;
 
 public class ElasticSearchWriter extends BaseWriter implements Writer {
 	
@@ -40,19 +41,7 @@ public class ElasticSearchWriter extends BaseWriter implements Writer {
 
 	@Override
 	protected void connect() {
-		
-		// Set log level to WARN for ES.
-		final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("org.elasticsearch");		
-		if ((logger instanceof ch.qos.logback.classic.Logger)) {
-			ch.qos.logback.classic.Logger logbackLogger = (ch.qos.logback.classic.Logger) logger;
-			logbackLogger.setLevel(ch.qos.logback.classic.Level.WARN);
-		}
-		
-		Settings settings = ImmutableSettings.settingsBuilder()
-		        .put("cluster.name", esCluster).build();
-		
-		esClient = new TransportClient(settings)
-        	.addTransportAddress(new InetSocketTransportAddress(esHost, esPort));
+		esClient = Utils.getElasticSearchConnection(esCluster, esHost, esPort);
 		
 		connected = true;
 		

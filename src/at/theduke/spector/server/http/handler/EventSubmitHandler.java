@@ -11,11 +11,10 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.slf4j.Logger;
 
 import at.theduke.spector.server.Application;
-import at.theduke.spector.server.EventReceiver;
 
 public class EventSubmitHandler extends AbstractHandler {
 	
-	EventReceiver eventReceiver;
+	Application app;
 	
 	protected final Logger logger = Application.getLogger();
 
@@ -24,6 +23,9 @@ public class EventSubmitHandler extends AbstractHandler {
     {
     	String gzipped = request.getParameter("gzipped");
     	String events = request.getParameter("events");
+    	
+    	System.out.println("Received request!");
+    	System.out.println(events);
     	
     	if (events == null) {
     		logger.info("REquest does not contain event data");
@@ -34,7 +36,7 @@ public class EventSubmitHandler extends AbstractHandler {
     		baseRequest.setHandled(true);
     	}
     	else {
-    		int counter = eventReceiver.receiveEvents(events, gzipped == "1" ? true : false);
+    		int counter = app.receiveEvents(events, gzipped == "1" ? true : false);
     		
     		response.setContentType("text/html;charset=utf-8");
     		response.setStatus(HttpServletResponse.SC_OK);
@@ -43,12 +45,8 @@ public class EventSubmitHandler extends AbstractHandler {
     	}
     }
 
-	public EventReceiver getEventReceiver() {
-		return eventReceiver;
-	}
-
-	public void setEventReceiver(EventReceiver eventReceiver) {
-		this.eventReceiver = eventReceiver;
+	public void setApplication(Application app) {
+		this.app = app;
 	}
     
     
