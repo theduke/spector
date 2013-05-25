@@ -47,8 +47,8 @@ public class ClientSessionHandler implements Writer {
 
 	@Override
 	public void onSessionStop() {
-		// TODO Auto-generated method stub
-
+		flushEvents();
+		sessions = new HashMap<String, SessionData>();
 	}
 	
 	private void updateSession(SessionData session) {
@@ -167,6 +167,12 @@ public class ClientSessionHandler implements Writer {
 
 	@Override
 	public void flushEvents() {
+		for (String id : sessions.keySet()) {
+			SessionData session = sessions.get(id);
+			if (session.changeCounter > 0) {
+				updateSession(session);
+			}
+		}
 	}
 
 }
